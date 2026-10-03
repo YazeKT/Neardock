@@ -1,5 +1,33 @@
 {
   "version": "1.0.0",
-  "status": "under-verification",
-  "assets": []
+  "status": "published",
+  "assets": [
+    {
+      "id": "windows-x64-installer",
+      "label": "Windows x64 installer",
+      "url": "https://github.com/YazeKT/Neardock/releases/download/neardock-v1.0.0/Neardock-1.0.0-windows-x64-unsigned.exe",
+      "sha256": "e79c2e4151ef101c0ab2c15a510cd09acd49697aa6cf146c446e382402fac5aa",
+      "buildVerified": true,
+      "deviceTested": false,
+      "signing": "Unsigned Windows installer"
+    },
+    {
+      "id": "windows-x64-portable",
+      "label": "Windows x64 portable ZIP",
+      "url": "https://github.com/YazeKT/Neardock/releases/download/neardock-v1.0.0/Neardock-1.0.0-windows-x64.zip",
+      "sha256": "a8f954b06f9f103a305ab52fbad0d1abfd6e2349706bbb032ae496884e39b80d",
+      "buildVerified": true,
+      "deviceTested": false,
+      "signing": "Unsigned Windows binaries"
+    },
+    {
+      "id": "android-arm64",
+      "label": "Android ARM64 APK",
+      "url": "https://github.com/YazeKT/Neardock/releases/download/neardock-v1.0.0/Neardock-1.0.0-android-arm64.apk",
+      "sha256": "a184d34c60f8ab69e59335e283acc0e4ca666d1f677fad961a33660182f80d2d",
+      "buildVerified": true,
+      "deviceTested": false,
+      "signing": "Neardock release key"
+    }
+  ]
 }

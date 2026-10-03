@@ -1,6 +1,6 @@
 # Verification status
 
-Evidence collected locally on 2Ã¢â‚¬â€œ3 October 2026. The owner accepted the current application and authorised GitHub publication on 3 October 2026. Owner acceptance does not imply every detailed case below was tested.
+Evidence collected locally on 2ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“3 October 2026. The owner accepted the current application and authorised GitHub publication on 3 October 2026. Owner acceptance does not imply every detailed case below was tested.
 
 ## Neardock 1.0.0 checks
 
@@ -40,3 +40,5 @@ GitHub CI initially found two browser-transfer tests still asserting the previou
 The hosted Windows ARM64 attempt could not resolve a Windows ARM64 Flutter 3.41.9 SDK archive during setup. This pinned-toolchain target remains unavailable; it was removed from the default build matrix rather than publishing x64 binaries as ARM64 or silently upgrading toolchains. See https://github.com/YazeKT/Neardock/actions/runs/37126381277 . Android ARM32/x64 hosted packaging is being checked independently.
 
 Release provenance: the neardock-v1.0.0 tag and local binaries use commit 6d4dd0332b252c3667075494bb20eb67c56a25af. Successful hosted CI ran on 97a980e969b62601532daf63275531bfe13e46e7, which changes only the two browser page branding assertions and verification notes. Runtime app, core implementation and assets are identical. Later documentation/workflow publication commits do not alter the packaged app. The original release tag is retained.
+
+Neardock 1.0.0 was published with the locally verified Windows x64 installer/portable ZIP, signed Android ARM64 APK and checksum file. Website manifest links only those published assets. Physical-device booleans stay false because the detailed acceptance matrix was not independently completed.
