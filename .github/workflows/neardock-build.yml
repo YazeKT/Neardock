@@ -1,4 +1,7 @@
 name: Neardock Windows and Android builds
+# Windows ARM64 is unavailable with this pinned SDK: the official setup action
+# cannot resolve a Windows ARM64 Flutter 3.41.9 archive. Do not substitute an x64
+# binary or upgrade the SDK silently. Reintroduce the native target after review.
 on:
   workflow_dispatch:
 permissions:
@@ -13,8 +16,6 @@ jobs:
         include:
           - arch: x64
             runner: windows-2022
-          - arch: arm64
-            runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
