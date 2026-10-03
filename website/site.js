@@ -10,7 +10,7 @@ function render() {
   const assets = release.assets.filter(asset => asset && typeof asset.id === 'string' && (asset.id === prefix || asset.id.startsWith(prefix + '-')) && asset.buildVerified === true && typeof asset.deviceTested === 'boolean' && typeof asset.signing === 'string' && typeof asset.url === 'string' && /^https:\/\/github\.com\/YazeKT\/Neardock\/releases\/download\/neardock-v1\.0\.0\/[A-Za-z0-9._-]+$/.test(asset.url) && /^[a-f0-9]{64}$/.test(asset.sha256));
   if (!assets.length) {
     const p = document.createElement('p'); p.className = 'status';
-    p.textContent = 'This architecture is not available yet. Choose Windows x64 or Android ARM64 for the verified 1.0.0 downloads.';
+    p.textContent = 'This architecture is not available yet. Choose Windows x64 or one of the verified Android APKs for 1.0.0.';
     target.append(p); return;
   }
   for (const asset of assets) {

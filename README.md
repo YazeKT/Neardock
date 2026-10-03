@@ -8,13 +8,12 @@ internet connection for local transfers. The initial 1.0.0 release preserves the
 existing transfer engine while introducing a Neardock interface, local text conversations,
 and manual clipboard sharing.
 
-[Website](https://yazekt.github.io/Neardock/) Â· [Releases](https://github.com/YazeKT/Neardock/releases) Â· [Help](docs/INSTALLATION.md)
+[Website](https://yazekt.github.io/Neardock/) Ã‚Â· [Releases](https://github.com/YazeKT/Neardock/releases) Ã‚Â· [Help](docs/INSTALLATION.md)
 
 ## Downloads and verification
 
-Download the Neardock Windows x64 installer or portable ZIP, or the Android ARM64 APK, from
-[the 1.0.0 release](https://github.com/YazeKT/Neardock/releases/tag/neardock-v1.0.0). Other
-architectures remain unavailable until verified.
+Download the Neardock Windows x64 installer or portable ZIP, or an Android ARM32, ARM64 or x64 APK, from
+[the 1.0.0 release](https://github.com/YazeKT/Neardock/releases/tag/neardock-v1.0.0). Windows ARM64 remains unavailable with the pinned toolchain.
 Windows packages are unsigned unless the release notes explicitly say otherwise.
 Android release APKs use Neardock's own signing key. Availability and verification
 are recorded in [VERIFICATION.md](docs/VERIFICATION.md).

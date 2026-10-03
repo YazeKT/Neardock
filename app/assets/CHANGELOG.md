@@ -48,3 +48,14 @@ Neardock's first release brings local file sharing, conversations and clipboard 
 - Ten researched feature ideas are recorded in docs/FEATURE_RESEARCH.md for later releases; they are not part of 1.0.0.
 
 For code provenance and retained notices, see docs/UPSTREAM.md and NOTICE.md.
+
+### Distribution follow-up — 3 October 2026
+
+- Verify Windows x64 packaging on a clean GitHub runner.
+- Add signed Android ARM32 and x64 APK downloads after hosted build, signing identity, native ABI and archive verification.
+- Keep the reviewed Android ARM64 APK and Windows packages unchanged; expand the published checksum file and download selector to five app artifacts.
+- Verify public download URLs, remote asset hashes and the running app's GitHub version check.
+- Refresh the product website with final Windows and Android screenshots and publish it through GitHub Pages.
+- Keep Windows ARM64 unavailable with the pinned toolchain; its SDK setup attempt failed and the default build matrix now contains verified targets only.
+
+These distribution notes were added after the 1.0.0 app packages were produced. Their bundled changelog covers the complete application changes above; current architecture availability is listed on the website and release page.
