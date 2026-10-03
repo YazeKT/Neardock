@@ -1,5 +1,5 @@
 {
-  "appName": "LocalSend",
+  "appName": "Neardock",
   "general": {
     "accept": "אישור",
     "accepted": "התקבל",
@@ -109,7 +109,7 @@
       "minimizeToTray": "יציאה: מזעור למגש",
       "launchAtStartup": "הפעלה אוטומטית לאחר הכניסה",
       "launchMinimized": "הפעלה אוטומטית: התחל מוסתר",
-      "showInContextMenu": "הצג את LocalSend בתפריט ההקשר",
+      "showInContextMenu": "הצג את Neardock בתפריט ההקשר",
       "animations": "אנימציות"
     },
     "receive": {
@@ -180,7 +180,7 @@
   },
   "networkInterfacesPage": {
     "title": "ממשקי רשת",
-    "info": "כברירת מחדל, LocalSend משתמש בכל ממשקי הרשת הזמינים. באפשרותך להסיר רשתות שאינן רצויות כאן. עליך להפעיל מחדש את השרת כדי להחיל את השינויים.",
+    "info": "כברירת מחדל, Neardock משתמש בכל ממשקי הרשת הזמינים. באפשרותך להסיר רשתות שאינן רצויות כאן. עליך להפעיל מחדש את השרת כדי להחיל את השינויים.",
     "preview": "תצוגה מקדימה",
     "whitelist": "רשימה לבנה",
     "blacklist": "רשימה שחורה"
@@ -241,7 +241,7 @@
   "receiveOptionsPage": {
     "title": "אפשרויות",
     "destination": "@:settingsTab.receive.destination",
-    "appDirectory": "(תיקיית LocalSend)",
+    "appDirectory": "(תיקיית Neardock)",
     "saveToGallery": "@:settingsTab.receive.saveToGallery",
     "saveToGalleryOff": "כבוי באופן אוטומטי בשל קיום ספריות."
   },
@@ -296,16 +296,16 @@
     "autoAccept": "אישור בקשות באופן אוטומטי",
     "requirePin": "דרוש סיסמה",
     "pinHint": "הסיסמה היא \"{pin}\"",
-    "encryptionHint": "LocalSend משתמש בתעודה עצמית. עליך לאשר אותה בדפדפן.",
+    "encryptionHint": "Neardock משתמש בתעודה עצמית. עליך לאשר אותה בדפדפן.",
     "pendingRequests": "בקשות בהמתנה: {n}"
   },
   "webReceivePage": {
     "title": "קבלה באמצעות קישור"
   },
   "aboutPage": {
-    "title": "אודות LocalSend",
+    "title": "אודות Neardock",
     "description": [
-      "LocalSend היא אפליקציית קוד פתוח חינמית המאפשרת לשתף קבצים והודעות בצורה מאובטחת עם מכשירים קרובים דרך הרשת המקומית מבלי להזדקק לחיבור לאינטרנט.",
+      "Neardock היא אפליקציית קוד פתוח חינמית המאפשרת לשתף קבצים והודעות בצורה מאובטחת עם מכשירים קרובים דרך הרשת המקומית מבלי להזדקק לחיבור לאינטרנט.",
       "אפליקציה זו זמינה באנדרואיד, iOS, macOS, Windows ו-Linux. אתה יכול למצוא את כל אפשרויות ההורדה בדף הבית הרשמי."
     ],
     "author": "יוצר",
@@ -401,7 +401,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "ל־LocalSend אין אפשרות למצוא מכשירים אחרים ללא הרשאה לסריקת הרשת המקומית. אנא הענק את ההרשאה הזו בהגדרות.",
+      "description": "ל־Neardock אין אפשרות למצוא מכשירים אחרים ללא הרשאה לסריקת הרשת המקומית. אנא הענק את ההרשאה הזו בהגדרות.",
       "gotoSettings": "הגדרות"
     },
     "messageInput": {
@@ -448,7 +448,7 @@
       "title": "מצבי שליחה",
       "single": "שליחת קבצים למקבל בודד. בחירת הקבצים תתאפס לאחר השליחה.",
       "multiple": "שליחת קבצים למקבלים מרובים. בחירת הקבצים לא תתאפס.",
-      "link": "מקבלים ש-LocalSend לא מותקן אצלם יוכלו להוריד את הקבצים שנבחרו על ידי פתיחת הקישור בדפדפן שלהם."
+      "link": "מקבלים ש-Neardock לא מותקן אצלם יוכלו להוריד את הקבצים שנבחרו על ידי פתיחת הקישור בדפדפן שלהם."
     },
     "zoom": {
       "title": "URL"
@@ -461,7 +461,7 @@
   "tray": {
     "@info": "Apple Guidelines are very strict about the 'close' wording.",
     "open": "@:general.open",
-    "close": "צא מ-LocalSend",
+    "close": "צא מ-Neardock",
     "closeWindows": "יציאה"
   },
   "web": {

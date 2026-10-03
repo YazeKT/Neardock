@@ -43,8 +43,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 
   // Translations
 
-  /// en: 'LocalSend'
-  String get appName => 'LocalSend';
+  /// en: 'Neardock'
+  String get appName => 'Neardock';
 
   late final Translations$general$en general = Translations$general$en.internal(_root);
   late final Translations$receiveTab$en receiveTab = Translations$receiveTab$en.internal(_root);
@@ -73,6 +73,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
   late final Translations$tray$en tray = Translations$tray$en.internal(_root);
   late final Translations$web$en web = Translations$web$en.internal(_root);
   late final Translations$assetPicker$en assetPicker = Translations$assetPicker$en.internal(_root);
+  late final Translations$neardockUI$en neardockUI = Translations$neardockUI$en.internal(_root);
 }
 
 // Path: general
@@ -317,9 +318,9 @@ class Translations$networkInterfacesPage$en {
   /// en: 'Network Interfaces'
   String get title => 'Network Interfaces';
 
-  /// en: 'By default, LocalSend uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.'
+  /// en: 'By default, Neardock uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.'
   String get info =>
-      'By default, LocalSend uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.';
+      'By default, Neardock uses all available network interfaces. You can exclude unwanted networks here. You need to restart the server to apply the changes.';
 
   /// en: 'Preview'
   String get preview => 'Preview';
@@ -468,8 +469,8 @@ class Translations$receiveOptionsPage$en {
   /// en: 'Save to folder'
   String get destination => _root.settingsTab.receive.destination;
 
-  /// en: '(LocalSend folder)'
-  String get appDirectory => '(LocalSend folder)';
+  /// en: '(Neardock folder)'
+  String get appDirectory => '(Neardock folder)';
 
   /// en: 'Save media to gallery'
   String get saveToGallery => _root.settingsTab.receive.saveToGallery;
@@ -568,8 +569,8 @@ class Translations$webSharePage$en {
   /// en: 'The PIN is "{pin}"'
   String pinHint({required Object pin}) => 'The PIN is "${pin}"';
 
-  /// en: 'LocalSend uses a self-signed certificate. You need to accept it in your browser.'
-  String get encryptionHint => 'LocalSend uses a self-signed certificate. You need to accept it in your browser.';
+  /// en: 'Neardock uses a self-signed certificate. You need to accept it in your browser.'
+  String get encryptionHint => 'Neardock uses a self-signed certificate. You need to accept it in your browser.';
 
   /// en: 'Pending requests: {n}'
   String pendingRequests({required Object n}) => 'Pending requests: ${n}';
@@ -595,11 +596,11 @@ class Translations$aboutPage$en {
 
   // Translations
 
-  /// en: 'About LocalSend'
-  String get title => 'About LocalSend';
+  /// en: 'About Neardock'
+  String get title => 'About Neardock';
 
   List<String> get description => [
-    'LocalSend is a free, open-source app that allows you to securely share files and messages with nearby devices over your local network without needing an internet connection.',
+    'Neardock is a free, open-source app that allows you to securely share files and messages with nearby devices over your local network without needing an internet connection.',
     'This app is available on Android, iOS, macOS, Windows and Linux. You can find all download options on the official homepage.',
   ];
 
@@ -813,8 +814,8 @@ class Translations$tray$en {
   /// en: 'Open'
   String get open => _root.general.open;
 
-  /// en: 'Quit LocalSend'
-  String get close => 'Quit LocalSend';
+  /// en: 'Quit Neardock'
+  String get close => 'Quit Neardock';
 
   /// en: 'Exit'
   String get closeWindows => 'Exit';
@@ -945,6 +946,354 @@ class Translations$assetPicker$en {
 
   /// en: 'count'
   String get sUnitAssetCountLabel => 'count';
+}
+
+// Path: neardockUI
+class Translations$neardockUI$en {
+  Translations$neardockUI$en.internal(this._root);
+
+  final Translations _root; // ignore: unused_field
+
+  // Translations
+
+  /// en: 'Chat'
+  String get chat => 'Chat';
+
+  /// en: 'Clipboard'
+  String get clipboard => 'Clipboard';
+
+  /// en: 'Appearance'
+  String get appearance => 'Appearance';
+
+  /// en: 'Transfers'
+  String get transfers => 'Transfers';
+
+  /// en: 'Devices'
+  String get devices => 'Devices';
+
+  /// en: 'Privacy'
+  String get privacy => 'Privacy';
+
+  /// en: 'Advanced'
+  String get advanced => 'Advanced';
+
+  /// en: 'About & Licences'
+  String get aboutLicences => 'About & Licences';
+
+  /// en: 'Chat & Clipboard'
+  String get chatClipboard => 'Chat & Clipboard';
+
+  /// en: 'Choose a nearby device and select files to send.'
+  String get sendSubtitle => 'Choose a nearby device and select files to send.';
+
+  /// en: 'Keep this device open to receive files from nearby devices.'
+  String get receiveSubtitle => 'Keep this device open to receive files from nearby devices.';
+
+  /// en: 'Ready to receive'
+  String get readyToReceive => 'Ready to receive';
+
+  /// en: 'Recent files'
+  String get recentFiles => 'Recent files';
+
+  /// en: 'Received files will appear here when file history is enabled.'
+  String get emptyFiles => 'Received files will appear here when file history is enabled.';
+
+  /// en: 'Your device is visible to nearby devices on your local network while receiving is enabled.'
+  String get visibilityHelp => 'Your device is visible to nearby devices on your local network while receiving is enabled.';
+
+  /// en: 'Text conversations with your devices.'
+  String get chatSubtitle => 'Text conversations with your devices.';
+
+  /// en: 'Connect by address'
+  String get connectAddress => 'Connect by address';
+
+  /// en: 'Find a device'
+  String get findDevice => 'Find a device';
+
+  /// en: 'No nearby devices yet. Open Neardock or LocalSend on another device on the same network.'
+  String get emptyDevices => 'No nearby devices yet. Open Neardock or LocalSend on another device on the same network.';
+
+  /// en: 'Nearby'
+  String get nearby => 'Nearby';
+
+  /// en: 'Offline'
+  String get offline => 'Offline';
+
+  /// en: 'Device'
+  String get device => 'Device';
+
+  /// en: 'Manually paste, review and send text to a nearby device.'
+  String get clipboardSubtitle => 'Manually paste, review and send text to a nearby device.';
+
+  /// en: 'Text to send'
+  String get draftLabel => 'Text to send';
+
+  /// en: 'Paste or type text here'
+  String get draftHint => 'Paste or type text here';
+
+  /// en: 'Paste text'
+  String get pasteText => 'Paste text';
+
+  /// en: 'Send text'
+  String get sendText => 'Send text';
+
+  /// en: 'Send to'
+  String get sendTo => 'Send to';
+
+  /// en: 'Received text'
+  String get receivedText => 'Received text';
+
+  /// en: 'Received text will appear here. Copy it when you need it.'
+  String get emptyText => 'Received text will appear here. Copy it when you need it.';
+
+  /// en: 'Copy text'
+  String get copyText => 'Copy text';
+
+  /// en: 'Clear conversation'
+  String get clearConversation => 'Clear conversation';
+
+  /// en: 'Write a message'
+  String get writeMessage => 'Write a message';
+
+  /// en: 'Messages use the existing local text-transfer flow.'
+  String get localTextHelp => 'Messages use the existing local text-transfer flow.';
+
+  /// en: 'This device is offline. Open it on the same network to send.'
+  String get offlineTextHelp => 'This device is offline. Open it on the same network to send.';
+
+  /// en: 'Could not send text. Check the device connection and try again.'
+  String get sendTextError => 'Could not send text. Check the device connection and try again.';
+
+  /// en: 'Retry'
+  String get retry => 'Retry';
+
+  /// en: 'Completed'
+  String get completed => 'Completed';
+
+  /// en: 'Waiting'
+  String get waiting => 'Waiting';
+
+  /// en: 'Sending'
+  String get sending => 'Sending';
+
+  /// en: 'Rejected'
+  String get rejected => 'Rejected';
+
+  /// en: 'Cancelled'
+  String get cancelled => 'Cancelled';
+
+  /// en: 'Device busy'
+  String get busy => 'Device busy';
+
+  /// en: 'Too many attempts'
+  String get tooManyAttempts => 'Too many attempts';
+
+  /// en: 'Interrupted'
+  String get interrupted => 'Interrupted';
+
+  /// en: 'Failed'
+  String get failed => 'Failed';
+
+  /// en: 'Clear conversation history?'
+  String get clearHistoryTitle => 'Clear conversation history?';
+
+  /// en: 'This removes stored text from Neardock on this device. It does not delete messages on other devices.'
+  String get clearHistoryHelp => 'This removes stored text from Neardock on this device. It does not delete messages on other devices.';
+
+  /// en: 'Customise Neardock to match your workflow.'
+  String get settingsSubtitle => 'Customise Neardock to match your workflow.';
+
+  /// en: 'Search settings'
+  String get searchSettings => 'Search settings';
+
+  /// en: 'Theme, colour, language and motion'
+  String get appearanceSubtitle => 'Theme, colour, language and motion';
+
+  /// en: 'Save location, file handling and transfer options'
+  String get transfersSubtitle => 'Save location, file handling and transfer options';
+
+  /// en: 'Device name, identity and receiving service'
+  String get devicesSubtitle => 'Device name, identity and receiving service';
+
+  /// en: 'Local conversation history and manual clipboard access'
+  String get textSettingsSubtitle => 'Local conversation history and manual clipboard access';
+
+  /// en: 'Encryption, receive PIN and local data'
+  String get privacySubtitle => 'Encryption, receive PIN and local data';
+
+  /// en: 'Network options, startup and diagnostics'
+  String get advancedSubtitle => 'Network options, startup and diagnostics';
+
+  /// en: 'Version, source, acknowledgements and brand terms'
+  String get aboutSubtitle => 'Version, source, acknowledgements and brand terms';
+
+  /// en: 'Transfers use your existing local network settings. Clipboard access happens only when you press Paste or Copy. Conversation history stays on this device.'
+  String get privacyHelp =>
+      'Transfers use your existing local network settings. Clipboard access happens only when you press Paste or Copy. Conversation history stays on this device.';
+
+  /// en: 'Save conversation history'
+  String get saveConversations => 'Save conversation history';
+
+  /// en: 'Store text on this device between app sessions.'
+  String get saveConversationsHelp => 'Store text on this device between app sessions.';
+
+  /// en: 'Clear all conversations'
+  String get clearAllConversations => 'Clear all conversations';
+
+  /// en: 'Clipboard is manual. Neardock never watches your clipboard or automatically replaces its contents. Incoming plain text is shared between Chat and Clipboard.'
+  String get manualClipboardHelp =>
+      'Clipboard is manual. Neardock never watches your clipboard or automatically replaces its contents. Incoming plain text is shared between Chat and Clipboard.';
+
+  /// en: 'by Yaze Media'
+  String get byYazeMedia => 'by Yaze Media';
+
+  /// en: 'Share files between nearby devices.'
+  String get purpose => 'Share files between nearby devices.';
+
+  /// en: 'Product website'
+  String get website => 'Product website';
+
+  /// en: 'Source code'
+  String get sourceCode => 'Source code';
+
+  /// en: 'Open-source acknowledgements'
+  String get acknowledgements => 'Open-source acknowledgements';
+
+  /// en: 'Based on LocalSend'
+  String get basedOnLocalSend => 'Based on LocalSend';
+
+  /// en: 'Upstream authors, contributors and notices'
+  String get upstreamCredits => 'Upstream authors, contributors and notices';
+
+  /// en: 'Apache License 2.0'
+  String get apacheLicense => 'Apache License 2.0';
+
+  /// en: 'Neardock code · Copyright 2026 Yaze Media'
+  String get codeCopyright => 'Neardock code · Copyright 2026 Yaze Media';
+
+  /// en: 'Third-party licences'
+  String get thirdPartyLicences => 'Third-party licences';
+
+  /// en: 'Brand asset terms'
+  String get brandTerms => 'Brand asset terms';
+
+  /// en: 'Neardock name, logo and artwork'
+  String get brandAssets => 'Neardock name, logo and artwork';
+
+  /// en: 'Copyright 2026 Yaze Media. The Neardock name, logo and brand artwork are reserved to Yaze Media. You may reproduce them to identify unchanged Neardock copies. Modified distributions must use distinct branding unless Yaze Media gives permission. These terms do not restrict code licensed under Apache 2.0. See BRAND_ASSETS.md in the source distribution.'
+  String get brandTermsText =>
+      'Copyright 2026 Yaze Media. The Neardock name, logo and brand artwork are reserved to Yaze Media. You may reproduce them to identify unchanged Neardock copies. Modified distributions must use distinct branding unless Yaze Media gives permission. These terms do not restrict code licensed under Apache 2.0. See BRAND_ASSETS.md in the source distribution.';
+
+  /// en: 'Logs'
+  String get logs => 'Logs';
+
+  /// en: 'Local diagnostics with private details removed.'
+  String get logsSubtitle => 'Local diagnostics with private details removed.';
+
+  /// en: 'Copy diagnostics'
+  String get copyDiagnostics => 'Copy diagnostics';
+
+  /// en: 'Clear logs'
+  String get clearLogs => 'Clear logs';
+
+  /// en: 'Only event types, request methods, response codes and times appear here. Addresses, file names, message text and secrets are omitted.'
+  String get logsPrivacy =>
+      'Only event types, request methods, response codes and times appear here. Addresses, file names, message text and secrets are omitted.';
+
+  /// en: 'No request diagnostics yet.'
+  String get noLogs => 'No request diagnostics yet.';
+
+  /// en: 'Welcome to Neardock'
+  String get welcome => 'Welcome to Neardock';
+
+  /// en: 'Your nearby devices. Files, messages and clipboard text.'
+  String get welcomeSubtitle => 'Your nearby devices. Files, messages and clipboard text.';
+
+  /// en: 'Connect your devices'
+  String get setupNetwork => 'Connect your devices';
+
+  /// en: 'Use the same Wi-Fi, Ethernet network or a phone hotspot. Open Neardock on both devices. Internet access is not required.'
+  String get setupNetworkBody =>
+      'Use the same Wi-Fi, Ethernet network or a phone hotspot. Open Neardock on both devices. Internet access is not required.';
+
+  /// en: 'Make your first transfer'
+  String get setupTransfer => 'Make your first transfer';
+
+  /// en: 'In Send, choose a nearby device, add files and press Send. Review the connection on the receiving device.'
+  String get setupTransferBody => 'In Send, choose a nearby device, add files and press Send. Review the connection on the receiving device.';
+
+  /// en: 'Choose what you share'
+  String get setupPrivacy => 'Choose what you share';
+
+  /// en: 'Chat sends messages. Clipboard sends only text you paste or enter yourself. You can manage devices and local history in Settings.'
+  String get setupPrivacyBody =>
+      'Chat sends messages. Clipboard sends only text you paste or enter yourself. You can manage devices and local history in Settings.';
+
+  /// en: 'Get started'
+  String get getStarted => 'Get started';
+
+  /// en: 'Next'
+  String get next => 'Next';
+
+  /// en: 'Skip setup'
+  String get skipSetup => 'Skip setup';
+
+  /// en: 'Known devices'
+  String get knownDevices => 'Known devices';
+
+  /// en: 'Trust is tied to the device certificate. Names and IP addresses may change. Wi-Fi names are not collected. Revoke trust to review the next transfer.'
+  String get deviceTrustHelp =>
+      'Trust is tied to the device certificate. Names and IP addresses may change. Wi-Fi names are not collected. Revoke trust to review the next transfer.';
+
+  /// en: 'Trusted'
+  String get trusted => 'Trusted';
+
+  /// en: 'Review required'
+  String get reviewRequired => 'Review required';
+
+  /// en: 'Model'
+  String get deviceModel => 'Model';
+
+  /// en: 'Recent addresses'
+  String get addresses => 'Recent addresses';
+
+  /// en: 'Last seen'
+  String get lastSeen => 'Last seen';
+
+  /// en: 'Certificate fingerprint'
+  String get fingerprint => 'Certificate fingerprint';
+
+  /// en: 'Revoke trust'
+  String get revokeTrust => 'Revoke trust';
+
+  /// en: 'Forget device'
+  String get forgetDevice => 'Forget device';
+
+  /// en: 'Updates'
+  String get updates => 'Updates';
+
+  /// en: 'GitHub releases and update preferences.'
+  String get updatesSubtitle => 'GitHub releases and update preferences.';
+
+  /// en: 'Check GitHub for updates automatically'
+  String get checkUpdates => 'Check GitHub for updates automatically';
+
+  /// en: 'Contacts GitHub for public release information. Your files, messages and device identity are not sent. You can change this in Settings.'
+  String get updatePrivacy =>
+      'Contacts GitHub for public release information. Your files, messages and device identity are not sent. You can change this in Settings.';
+
+  /// en: 'Connect to {alias}?'
+  String connectDevice({required Object alias}) => 'Connect to ${alias}?';
+
+  /// en: 'Trust this device to accept future files and messages automatically. Its certificate identifies it even when its name or address changes. You can revoke trust in Settings → Devices.'
+  String get trustDeviceExplanation =>
+      'Trust this device to accept future files and messages automatically. Its certificate identifies it even when its name or address changes. You can revoke trust in Settings → Devices.';
+
+  /// en: 'Review this transfer'
+  String get reviewTransfer => 'Review this transfer';
+
+  /// en: 'Trust & accept'
+  String get trustAndAccept => 'Trust & accept';
 }
 
 // Path: receiveTab.infoBox
@@ -1091,8 +1440,8 @@ class Translations$settingsTab$general$en {
   /// en: 'Autostart: Start hidden'
   String get launchMinimized => 'Autostart: Start hidden';
 
-  /// en: 'Show LocalSend in context menu'
-  String get showInContextMenu => 'Show LocalSend in context menu';
+  /// en: 'Show Neardock in context menu'
+  String get showInContextMenu => 'Show Neardock in context menu';
 
   /// en: 'Animations'
   String get animations => 'Animations';
@@ -1638,9 +1987,9 @@ class Translations$dialogs$localNetworkUnauthorized$en {
   /// en: 'No permission'
   String get title => _root.dialogs.noPermission.title;
 
-  /// en: 'LocalSend can't find other devices without having the permission to scan the local network. Please grant this permission in the settings.'
+  /// en: 'Neardock can't find other devices without having the permission to scan the local network. Please grant this permission in the settings.'
   String get description =>
-      'LocalSend can\'t find other devices without having the permission to scan the local network. Please grant this permission in the settings.';
+      'Neardock can\'t find other devices without having the permission to scan the local network. Please grant this permission in the settings.';
 
   /// en: 'Settings'
   String get gotoSettings => 'Settings';
@@ -1805,8 +2154,8 @@ class Translations$dialogs$sendModeHelp$en {
   /// en: 'Sends files to multiple recipients. Selection will not be cleared after finished files transfer.'
   String get multiple => 'Sends files to multiple recipients. Selection will not be cleared after finished files transfer.';
 
-  /// en: 'Recipients who do not have LocalSend installed can download the selected files by opening the link in their browser.'
-  String get link => 'Recipients who do not have LocalSend installed can download the selected files by opening the link in their browser.';
+  /// en: 'Recipients who do not have Neardock installed can download the selected files by opening the link in their browser.'
+  String get link => 'Recipients who do not have Neardock installed can download the selected files by opening the link in their browser.';
 }
 
 // Path: dialogs.zoom

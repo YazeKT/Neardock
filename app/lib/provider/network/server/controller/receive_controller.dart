@@ -1,18 +1,21 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:async';
-import 'dart:convert';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:localsend_app/gen/strings.g.dart';
+import 'package:localsend_app/model/persistence/conversation_message.dart';
 import 'package:localsend_app/model/state/server/receive_session_state.dart';
 import 'package:localsend_app/model/state/server/receiving_file.dart';
 import 'package:localsend_app/pages/home_page.dart';
 import 'package:localsend_app/pages/home_page_controller.dart';
 import 'package:localsend_app/pages/progress_page.dart';
 import 'package:localsend_app/pages/receive_page.dart';
+import 'package:localsend_app/provider/conversation_provider.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/provider/favorites_provider.dart';
 import 'package:localsend_app/provider/file_transfer_provider.dart';
 import 'package:localsend_app/provider/http_provider.dart';
+import 'package:localsend_app/provider/known_devices_provider.dart';
 import 'package:localsend_app/provider/logging/discovery_logs_provider.dart';
 import 'package:localsend_app/provider/network/send_provider.dart';
 import 'package:localsend_app/provider/network/server/server_provider.dart';
@@ -29,7 +32,6 @@ import 'package:localsend_app/widget/dialogs/open_file_dialog.dart';
 import 'package:localsend_isolates/isolate.dart';
 import 'package:localsend_isolates/model/device.dart';
 import 'package:localsend_isolates/model/file_status.dart';
-import 'package:localsend_isolates/model/file_type.dart';
 import 'package:localsend_isolates/model/session_status.dart';
 import 'package:localsend_isolates/rust/api/server.dart' show SessionEndReasonV2;
 import 'package:localsend_isolates/util/rust.dart';
@@ -38,7 +40,6 @@ import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
-import 'package:uuid/uuid.dart';
 import 'package:window_manager/window_manager.dart';
 
 final _logger = Logger('ReceiveController');
@@ -48,6 +49,21 @@ final _logger = Logger('ReceiveController');
 /// the events handled here.
 class ReceiveController {
   final ServerUtils server;
+  final Set<String> _handledPrepareSessions = {};
+  final Set<String> _abortedPrepareSessions = {};
+  String? _currentPrepareId;
+  final Set<String> _trustedSessions = {};
+  final Set<String> _reviewSessions = {};
+  String? _consentSessionId;
+  BuildContext? _consentDialogContext;
+
+  void _dismissConsent(String? sessionId) {
+    if (sessionId == null || _consentSessionId != sessionId) return;
+    final context = _consentDialogContext;
+    _consentSessionId = null;
+    _consentDialogContext = null;
+    if (context != null && context.mounted) Navigator.of(context).pop('cancelled');
+  }
 
   ReceiveController(this.server);
 
@@ -68,6 +84,10 @@ class ReceiveController {
   /// The Rust server already checked the PIN and enforces that only one
   /// session can be active at a time.
   Future<void> onPrepareUpload(HttpServerPrepareUploadEvent event) async {
+    // A duplicate event must not replace the session or stack another consent page.
+    if (!_handledPrepareSessions.add(event.sessionId) || _abortedPrepareSessions.contains(event.sessionId)) return;
+    _currentPrepareId = event.sessionId;
+    if (_handledPrepareSessions.length > 256) _handledPrepareSessions.remove(_handledPrepareSessions.first);
     if (server.getStateOrNull()?.session != null) {
       // The Rust server is the authority on the single-session invariant:
       // a new request means the old session is over (e.g. finished but still
@@ -78,6 +98,7 @@ class ReceiveController {
     final settings = server.ref.read(settingsProvider);
     final destinationDir = settings.destination ?? await getDefaultDestinationDirectory();
     final cacheDir = await getCacheDirectory();
+    if (_currentPrepareId != event.sessionId || _abortedPrepareSessions.contains(event.sessionId)) return;
     final sessionId = event.sessionId;
     final files = {
       for (final entry in event.files.entries) entry.key: entry.value.toDart(),
@@ -88,6 +109,8 @@ class ReceiveController {
     // when encryption is disabled.
     final senderFingerprint = event.certFingerprint ?? event.info.fingerprint;
 
+    final known = server.ref.notifier(knownDevicesProvider);
+    known.observe(event.info.toDevice(event.ip, withChannel: false).copyWith(fingerprint: senderFingerprint));
     _logger.info('Session Id: $sessionId');
     _logger.info('Destination Directory: $destinationDir');
 
@@ -126,59 +149,97 @@ class ReceiveController {
           statuses: {for (final file in files.values) file.id: FileStatus.queue},
         );
 
-    bool quickSave = settings.quickSave && server.getState().session?.message == null;
-    final quickSaveFromFavorites = settings.quickSaveFromFavorites && server.getState().session?.message == null;
-    if (quickSaveFromFavorites) {
-      final bool isFavorite = server.ref.read(favoritesProvider).any((e) => e.fingerprint == senderFingerprint);
-      if (isFavorite) {
-        quickSave = true;
+    final message = server.getState().session?.message;
+    void recordMessage() {
+      final session = server.getStateOrNull()?.session;
+      if (message == null || session == null || session.sessionId != sessionId) return;
+      server.ref
+          .notifier(conversationProvider)
+          .add(
+            ConversationMessage(
+              id: 'receive:$sessionId',
+              peerFingerprint: senderFingerprint,
+              peerAlias: session.senderAlias,
+              text: message,
+              outgoing: false,
+              timestamp: DateTime.now().toUtc(),
+              status: 'received',
+            ),
+          );
+    }
+
+    bool trusted = known.acceptsVerified(event.certFingerprint);
+    if (!trusted && event.certFingerprint != null) {
+      if (checkPlatformHasTray() && (await windowManager.isMinimized() || !(await windowManager.isVisible()) || !(await windowManager.isFocused()))) {
+        await showFromTray();
+      }
+      if (server.getStateOrNull()?.session?.sessionId != sessionId) return;
+      _consentSessionId = sessionId;
+      final choice = await showDialog<String>(
+        // ignore: use_build_context_synchronously
+        context: Routerino.context,
+        barrierDismissible: false,
+        builder: (context) {
+          _consentDialogContext = context;
+          return AlertDialog(
+            title: Text(t.neardockUI.connectDevice(alias: event.info.alias)),
+            content: Text(t.neardockUI.trustDeviceExplanation),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context, 'decline'), child: Text(t.general.decline)),
+              TextButton(onPressed: () => Navigator.pop(context, 'review'), child: Text(t.neardockUI.reviewTransfer)),
+              FilledButton(onPressed: () => Navigator.pop(context, 'trust'), child: Text(t.neardockUI.trustAndAccept)),
+            ],
+          );
+        },
+      );
+      if (_consentSessionId == sessionId) {
+        _consentSessionId = null;
+        _consentDialogContext = null;
+      }
+      // The sender may have cancelled while the user was reviewing the request.
+      if (server.getStateOrNull()?.session?.sessionId != sessionId) return;
+      if (choice == 'decline' || choice == 'cancelled' || choice == null) {
+        declineFileRequest();
+        return;
+      }
+      if (choice == 'trust') {
+        try {
+          await known.setTrusted(senderFingerprint, true);
+          trusted = true;
+        } catch (_) {
+          // Do not grant transient trust after failing to save the user's decision.
+          await known.setTrusted(senderFingerprint, false).catchError((Object _) {});
+          if (Routerino.context.mounted) {
+            ScaffoldMessenger.of(Routerino.context).showSnackBar(
+              const SnackBar(content: Text('Could not save device trust. Review this transfer instead.')),
+            );
+          }
+        }
+        if (server.getStateOrNull()?.session?.sessionId != sessionId) return;
       }
     }
-    if (server.getState().webUpload && settings.receiveViaLinkAutoAccept && server.getState().session?.message == null) {
-      // The upload page (receive via link) is being served and requests should be accepted automatically.
+
+    bool quickSave = trusted || (settings.quickSave && message == null);
+    if (settings.quickSaveFromFavorites && message == null && server.ref.read(favoritesProvider).any((e) => e.fingerprint == senderFingerprint)) {
       quickSave = true;
     }
-
+    if (server.getState().webUpload && settings.receiveViaLinkAutoAccept && message == null) {
+      quickSave = true;
+    }
     if (quickSave) {
-      // Push before accepting: the permission request in [acceptFileRequest] may block for a while.
-      // ignore: use_build_context_synchronously, unawaited_futures
-      Routerino.context.pushImmediately(
-        () => ProgressPage(
-          showAppBar: false,
-          closeSessionOnClose: true,
-          sessionId: sessionId,
-        ),
-      );
-
-      // accept all files
-      await acceptFileRequest({
-        for (final f in files.values) f.id: f.fileName,
-      });
+      if (trusted) _trustedSessions.add(sessionId);
+      recordMessage();
+      if (message == null) {
+        // Progress is visible in-app; trusted transfers never require another consent dialog.
+        // ignore: use_build_context_synchronously, unawaited_futures
+        Routerino.context.pushImmediately(() => ProgressPage(showAppBar: false, closeSessionOnClose: true, sessionId: sessionId));
+      }
+      await acceptFileRequest(message != null ? {} : {for (final f in files.values) f.id: f.fileName});
       return;
     }
 
     if (checkPlatformHasTray() && (await windowManager.isMinimized() || !(await windowManager.isVisible()) || !(await windowManager.isFocused()))) {
       await showFromTray();
-    }
-
-    final message = server.getState().session?.message;
-    if (message != null) {
-      // Message already received
-      await server.ref
-          .redux(receiveHistoryProvider)
-          .dispatchAsync(
-            AddHistoryEntryAction(
-              entryId: const Uuid().v4(),
-              fileName: message,
-              fileType: FileType.text,
-              path: null,
-              savedToGallery: false,
-              isMessage: true,
-              fileSize: utf8.encode(message).length,
-              senderAlias: server.getState().session!.senderAlias,
-              timestamp: DateTime.now().toUtc(),
-            ),
-          );
     }
 
     final receiveProvider = ViewProvider((ref) {
@@ -192,6 +253,7 @@ class ReceiveController {
         files: session?.files.values.map((f) => f.file).toList() ?? [],
         message: message,
         onAccept: () async {
+          recordMessage();
           if (message != null) {
             // accept nothing
             await ref.notifier(serverProvider).acceptFileRequest({});
@@ -230,6 +292,7 @@ class ReceiveController {
 
     server.ref.notifier(selectedReceivingFilesProvider).setFiles(files.values.toList());
 
+    _reviewSessions.add(sessionId);
     // ignore: use_build_context_synchronously, unawaited_futures
     Routerino.context.push(() => ReceivePage(receiveProvider));
   }
@@ -413,7 +476,8 @@ class ReceiveController {
       // Only auto-close fully successful sessions: a failed file may still be
       // retried by the sender (e.g. after a checksum mismatch), which requires
       // the session to stay open.
-      bool quickSave = settings.quickSave && !hasError && server.getState().session?.message == null;
+      final wasTrusted = _trustedSessions.contains(session.sessionId);
+      bool quickSave = (wasTrusted || settings.quickSave) && !hasError && server.getState().session?.message == null;
       final quickSaveFromFavorites = settings.quickSaveFromFavorites && !hasError && server.getState().session?.message == null;
       if (quickSaveFromFavorites) {
         final bool isFavorite = server.ref.read(favoritesProvider).any((e) => e.fingerprint == session.sender.fingerprint);
@@ -431,7 +495,7 @@ class ReceiveController {
           Routerino.context.pushRootImmediately(() => const HomePage(initialTab: HomeTab.receive, appStart: false));
 
           // open the dialog to open file instantly
-          if (filePath != null && filePath.isNotEmpty) {
+          if (!wasTrusted && filePath != null && filePath.isNotEmpty) {
             // ignore: discarded_futures
             OpenFileDialog.open(
               Routerino.context, // ignore: use_build_context_synchronously
@@ -458,17 +522,27 @@ class ReceiveController {
         // Already handled when the last file finished.
         break;
       case SessionEndReasonV2.cancelled:
+        if (receiveSession.status == SessionStatus.waiting && !_reviewSessions.contains(event.sessionId)) {
+          closeSession();
+          return;
+        }
         _cancelBySender(server);
     }
   }
 
   /// The sender aborted the request while the user was still deciding.
   void onPrepareUploadAborted(HttpServerPrepareUploadAbortedEvent event) {
+    _abortedPrepareSessions.add(event.sessionId);
+    if (_abortedPrepareSessions.length > 256) _abortedPrepareSessions.remove(_abortedPrepareSessions.first);
     final receiveSession = server.getStateOrNull()?.session;
     if (receiveSession == null || receiveSession.sessionId != event.sessionId || receiveSession.status != SessionStatus.waiting) {
       return;
     }
 
+    if (receiveSession.status == SessionStatus.waiting && !_reviewSessions.contains(event.sessionId)) {
+      closeSession();
+      return;
+    }
     _cancelBySender(server);
   }
 
@@ -681,6 +755,12 @@ class ReceiveController {
   }
 
   void closeSession() {
+    final id = server.getStateOrNull()?.session?.sessionId;
+    _dismissConsent(id);
+    if (id != null) {
+      _trustedSessions.remove(id);
+      _reviewSessions.remove(id);
+    }
     final sessionId = server.getStateOrNull()?.session?.sessionId;
     if (sessionId == null) {
       return;

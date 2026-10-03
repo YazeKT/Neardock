@@ -40,7 +40,7 @@ class TranslationsSr extends Translations with BaseTranslations<AppLocale, Trans
 
   // Translations
   @override
-  String get appName => 'LocalSend';
+  String get appName => 'Neardock';
   @override
   late final Translations$general$sr general = Translations$general$sr.internal(_root);
   @override
@@ -291,7 +291,7 @@ class Translations$networkInterfacesPage$sr extends Translations$networkInterfac
   String get title => 'Mrežni interfejsi';
   @override
   String get info =>
-      'Podrazumevano, LocalSend koristi sve dostupne mrežne interfejse. Ovde možete izuzeti neželjene mreže. Morate restartovati server da bi se primenile promene.';
+      'Podrazumevano, Neardock koristi sve dostupne mrežne interfejse. Ovde možete izuzeti neželjene mreže. Morate restartovati server da bi se primenile promene.';
   @override
   String get preview => 'Pregled';
   @override
@@ -416,7 +416,7 @@ class Translations$receiveOptionsPage$sr extends Translations$receiveOptionsPage
   @override
   String get destination => _root.settingsTab.receive.destination;
   @override
-  String get appDirectory => '(LocalSend folder)';
+  String get appDirectory => '(Neardock folder)';
   @override
   String get saveToGallery => _root.settingsTab.receive.saveToGallery;
   @override
@@ -495,7 +495,7 @@ class Translations$webSharePage$sr extends Translations$webSharePage$en {
   @override
   String pinHint({required Object pin}) => 'PIN je „${pin}“';
   @override
-  String get encryptionHint => 'LocalSend koristi samopotpisani sertifikat. Morate ga prihvatiti u svom pregledaču.';
+  String get encryptionHint => 'Neardock koristi samopotpisani sertifikat. Morate ga prihvatiti u svom pregledaču.';
   @override
   String pendingRequests({required Object n}) => 'Zahtevi na čekanju: ${n}';
 }
@@ -519,10 +519,10 @@ class Translations$aboutPage$sr extends Translations$aboutPage$en {
 
   // Translations
   @override
-  String get title => 'O LocalSend-u';
+  String get title => 'O Neardock-u';
   @override
   List<String> get description => [
-    'LocalSend je besplatna aplikacija otvorenog koda koja vam omogućava da bezbedno delite fajlove i poruke sa uređajima u blizini preko vaše lokalne mreže, bez potrebe za internet vezom.',
+    'Neardock je besplatna aplikacija otvorenog koda koja vam omogućava da bezbedno delite fajlove i poruke sa uređajima u blizini preko vaše lokalne mreže, bez potrebe za internet vezom.',
     'Ova aplikacije je dostupna za Android, iOS, macOS, Windows i Linux. Možete pronaći sve opcije za preuzimanje na zvaničnoj početnoj stranici.',
   ];
   @override
@@ -748,7 +748,7 @@ class Translations$tray$sr extends Translations$tray$en {
   @override
   String get open => _root.general.open;
   @override
-  String get close => 'Napusti LocalSend';
+  String get close => 'Napusti Neardock';
   @override
   String get closeWindows => 'Izađi';
 }
@@ -961,7 +961,7 @@ class Translations$settingsTab$general$sr extends Translations$settingsTab$gener
   @override
   String get launchMinimized => 'Automatsko pokretanje: Pokretanje skriveno';
   @override
-  String get showInContextMenu => 'Prikaži LocalSend u kontekstualnom meniju';
+  String get showInContextMenu => 'Prikaži Neardock u kontekstualnom meniju';
   @override
   String get animations => 'Animacije';
 }
@@ -1415,7 +1415,7 @@ class Translations$dialogs$localNetworkUnauthorized$sr extends Translations$dial
   @override
   String get title => _root.dialogs.noPermission.title;
   @override
-  String get description => 'LocalSend ne može da pronađe druge uređaje bez dozvole za skeniranje lokalne mreže. Dajte ovu dozvolu u podešavanjima.';
+  String get description => 'Neardock ne može da pronađe druge uređaje bez dozvole za skeniranje lokalne mreže. Dajte ovu dozvolu u podešavanjima.';
   @override
   String get gotoSettings => 'Podešavanja';
 }
@@ -1557,7 +1557,7 @@ class Translations$dialogs$sendModeHelp$sr extends Translations$dialogs$sendMode
   @override
   String get multiple => 'Slanje fajlova više primalaca. Izbor neće biti očišćen nakon završenog prenosa fajlova.';
   @override
-  String get link => 'Primaoci koji nemaju instaliran LocalSend mogu preuzeti izabrane fajlove otvaranjem linka u svom pregledaču.';
+  String get link => 'Primaoci koji nemaju instaliran Neardock mogu preuzeti izabrane fajlove otvaranjem linka u svom pregledaču.';
 }
 
 // Path: dialogs.zoom

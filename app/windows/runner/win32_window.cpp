@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 #include "win32_window.h"
 
 #include <dwmapi.h>
@@ -273,6 +274,13 @@ void Win32Window::OnDestroy() {
 }
 
 void Win32Window::UpdateTheme(HWND const window) {
+  // App-specific title-bar branding; unsupported DWM attributes are ignored.
+  // This does not change the user's Windows accent or system theme.
+  const COLORREF caption_color = RGB(23, 25, 30);
+  const COLORREF caption_text_color = RGB(244, 245, 247);
+  DwmSetWindowAttribute(window, DWMWA_CAPTION_COLOR, &caption_color, sizeof(caption_color));
+  DwmSetWindowAttribute(window, DWMWA_TEXT_COLOR, &caption_text_color, sizeof(caption_text_color));
+
   DWORD light_mode;
   DWORD light_mode_size = sizeof(light_mode);
   LSTATUS result = RegGetValue(HKEY_CURRENT_USER, kGetPreferredBrightnessRegKey,

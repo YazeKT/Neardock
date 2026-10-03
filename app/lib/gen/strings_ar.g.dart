@@ -40,7 +40,7 @@ class TranslationsAr extends Translations with BaseTranslations<AppLocale, Trans
 
   // Translations
   @override
-  String get appName => 'LocalSend';
+  String get appName => 'Neardock';
   @override
   late final _Translations$general$ar general = _Translations$general$ar._(_root);
   @override
@@ -291,7 +291,7 @@ class _Translations$networkInterfacesPage$ar extends Translations$networkInterfa
   String get title => 'واجهات الشبكة';
   @override
   String get info =>
-      'بشكل افتراضي، يستخدم LocalSend جميع واجهات الشبكة المتاحة. يمكنك استبعاد الشبكات غير المرغوب فيها هنا. تحتاج إلى إعادة تشغيل الخادم لتطبيق التغييرات.';
+      'بشكل افتراضي، يستخدم Neardock جميع واجهات الشبكة المتاحة. يمكنك استبعاد الشبكات غير المرغوب فيها هنا. تحتاج إلى إعادة تشغيل الخادم لتطبيق التغييرات.';
   @override
   String get preview => 'معاينة';
   @override
@@ -416,7 +416,7 @@ class _Translations$receiveOptionsPage$ar extends Translations$receiveOptionsPag
   @override
   String get destination => _root.settingsTab.receive.destination;
   @override
-  String get appDirectory => '(مجلد LocalSend)';
+  String get appDirectory => '(مجلد Neardock)';
   @override
   String get saveToGallery => _root.settingsTab.receive.saveToGallery;
   @override
@@ -495,7 +495,7 @@ class _Translations$webSharePage$ar extends Translations$webSharePage$en {
   @override
   String pinHint({required Object pin}) => 'رمز PIN هو "${pin}"';
   @override
-  String get encryptionHint => 'يستخدم تطبيق LocalSend شهادة موقع ذاتية التوقيع. يجب عليك قبولها في المتصفح.';
+  String get encryptionHint => 'يستخدم تطبيق Neardock شهادة موقع ذاتية التوقيع. يجب عليك قبولها في المتصفح.';
   @override
   String pendingRequests({required Object n}) => 'الطلبات المعلقة: ${n}';
 }
@@ -519,10 +519,10 @@ class _Translations$aboutPage$ar extends Translations$aboutPage$en {
 
   // Translations
   @override
-  String get title => 'عن LocalSend';
+  String get title => 'عن Neardock';
   @override
   List<String> get description => [
-    'LocalSend هو تطبيق مجاني مفتوح المصدر يسمح لك بمشاركة الملفات والرسائل بشكل آمن مع الأجهزة القريبة عبر شبكتك المحلية دون الحاجة إلى اتصال بالإنترنت.',
+    'Neardock هو تطبيق مجاني مفتوح المصدر يسمح لك بمشاركة الملفات والرسائل بشكل آمن مع الأجهزة القريبة عبر شبكتك المحلية دون الحاجة إلى اتصال بالإنترنت.',
     'هذا التطبيق متاح على أنظمة Android وiOS وmacOS وWindows وLinux. يمكنك العثور على جميع خيارات التنزيل على الصفحة الرئيسية الرسمية.',
   ];
   @override
@@ -744,7 +744,7 @@ class _Translations$tray$ar extends Translations$tray$en {
   @override
   String get open => _root.general.open;
   @override
-  String get close => 'أنهِ LocalSend';
+  String get close => 'أنهِ Neardock';
   @override
   String get closeWindows => 'اخرج';
 }
@@ -955,7 +955,7 @@ class _Translations$settingsTab$general$ar extends Translations$settingsTab$gene
   @override
   String get launchMinimized => 'تشغيل تلقائي: ابدأ مخفيًا';
   @override
-  String get showInContextMenu => 'إظهار LocalSend في قائمة السياق';
+  String get showInContextMenu => 'إظهار Neardock في قائمة السياق';
   @override
   String get animations => 'الرسوم المتحركة';
 }
@@ -1408,7 +1408,7 @@ class _Translations$dialogs$localNetworkUnauthorized$ar extends Translations$dia
   @override
   String get title => _root.dialogs.noPermission.title;
   @override
-  String get description => 'لا يمكن ل LocalSend العثور على الأجهزة الأخرى بدون الإذن بفحص الشبكة المحلية. يُرجى منح هذا الإذن في الإعدادات.';
+  String get description => 'لا يمكن ل Neardock العثور على الأجهزة الأخرى بدون الإذن بفحص الشبكة المحلية. يُرجى منح هذا الإذن في الإعدادات.';
   @override
   String get gotoSettings => 'الإعدادات';
 }
@@ -1550,7 +1550,7 @@ class _Translations$dialogs$sendModeHelp$ar extends Translations$dialogs$sendMod
   @override
   String get multiple => 'يرسل الملفات إلى عدة مستلمين. لن يتم مسح التحديد بعد الانتهاء من نقل الملفات.';
   @override
-  String get link => 'يمكن للمستلمين الذين لا يحتوون على LocalSend تنزيل الملفات المحددة عن طريق فتح الرابط في متصفحهم.';
+  String get link => 'يمكن للمستلمين الذين لا يحتوون على Neardock تنزيل الملفات المحددة عن طريق فتح الرابط في متصفحهم.';
 }
 
 // Path: dialogs.zoom

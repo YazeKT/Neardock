@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'package:flutter/material.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/state/purchase_state.dart';
@@ -22,7 +23,7 @@ class DonationPage extends StatelessWidget {
       builder: (context, vm) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(t.donationPage.title),
+            title: const Text('Support LocalSend'),
           ),
           body: Stack(
             children: [

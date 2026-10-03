@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:convert';
 import 'dart:io';
 
@@ -34,12 +35,12 @@ final _logger = Logger('PersistenceService');
 
 String get _windowsFile {
   final appData = Platform.environment['APPDATA'];
-  return '$appData\\LocalSend\\settings.json';
+  return '$appData\\Neardock\\settings.json';
 }
 
 String get _windowsLegacyFile {
   final appData = Platform.environment['APPDATA'];
-  return '$appData\\org.localsend\\localsend_app\\shared_preferences.json';
+  return '$appData\\io.github.yazekt\\neardock\\shared_preferences.json';
 }
 
 // Version of the storage
@@ -175,6 +176,7 @@ class PersistenceService {
     }
 
     if (isFirstAppStart) {
+      await prefs.setString(_themeKey, ThemeMode.dark.name);
       final systemAnimations = await getSystemAnimationsStatus();
       if (!systemAnimations) {
         _logger.info('System animations are disabled, disabling animations in the app.');
@@ -209,7 +211,7 @@ class PersistenceService {
   static Future<void> _initColorSetting(SharedPreferences prefs, bool supportsDynamicColors) async {
     await prefs.setString(
       _colorKey,
-      checkPlatform([TargetPlatform.android]) && supportsDynamicColors ? ColorMode.system.name : ColorMode.localsend.name,
+      ColorMode.localsend.name,
     );
   }
 
@@ -252,6 +254,18 @@ class PersistenceService {
     await _prefs.setString(_stunServers, jsonEncode(servers));
   }
 
+  bool getConversationHistoryEnabled() => _prefs.getBool('nd_conversation_history_enabled') ?? true;
+
+  Future<void> setConversationHistoryEnabled(bool enabled) async {
+    await _prefs.setBool('nd_conversation_history_enabled', enabled);
+  }
+
+  List<String> getConversationMessages() => _prefs.getStringList('nd_conversation_messages_v1') ?? [];
+
+  Future<void> setConversationMessages(List<String> messages) async {
+    await _prefs.setStringList('nd_conversation_messages_v1', messages);
+  }
+
   List<ReceiveHistoryEntry> getReceiveHistory() {
     final historyRaw = _prefs.getStringList(_receiveHistory) ?? [];
     return historyRaw.map((entry) => ReceiveHistoryEntry.fromJson(jsonDecode(entry))).toList();
@@ -287,7 +301,7 @@ class PersistenceService {
   ThemeMode getTheme() {
     final value = _prefs.getString(_themeKey);
     if (value == null) {
-      return ThemeMode.system;
+      return ThemeMode.dark;
     }
     return ThemeMode.values.firstWhereOrNull((theme) => theme.name == value) ?? ThemeMode.system;
   }
@@ -587,6 +601,24 @@ class PersistenceService {
 
   Future<void> setWhatsNew(String version) async {
     await _prefs.setString(_whatsNewKey, version);
+  }
+
+  bool getOnboardingCompleted() => _prefs.getBool('nd_onboarding_completed') ?? false;
+
+  Future<void> setOnboardingCompleted(bool completed) async {
+    await _prefs.setBool('nd_onboarding_completed', completed);
+  }
+
+  List<String> getKnownDevices() => _prefs.getStringList('nd_known_devices_v1') ?? [];
+
+  Future<void> setKnownDevices(List<String> devices) async {
+    await _prefs.setStringList('nd_known_devices_v1', devices);
+  }
+
+  bool getAutomaticUpdatesEnabled() => _prefs.getBool('nd_automatic_updates_enabled') ?? true;
+
+  Future<void> setAutomaticUpdatesEnabled(bool enabled) async {
+    await _prefs.setBool('nd_automatic_updates_enabled', enabled);
   }
 
   Future<void> clear() async {

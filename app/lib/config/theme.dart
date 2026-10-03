@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:localsend_app/gen/strings.g.dart';
@@ -8,7 +9,7 @@ import 'package:localsend_app/util/ui/dynamic_colors.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:yaru/yaru.dart' as yaru;
 
-final _borderRadius = BorderRadius.circular(5);
+final _borderRadius = BorderRadius.circular(10);
 
 ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness, DynamicColors? dynamicColors) {
   if (colorMode == ColorMode.yaru) {
@@ -52,6 +53,28 @@ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness
   return ThemeData(
     colorScheme: colorScheme,
     useMaterial3: true,
+    scaffoldBackgroundColor: colorScheme.surface,
+    cardColor: colorScheme.surfaceContainer,
+    appBarTheme: AppBarTheme(backgroundColor: colorScheme.surface, surfaceTintColor: Colors.transparent, elevation: 0),
+    cardTheme: CardThemeData(
+      elevation: 0,
+      color: colorScheme.surfaceContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+    ),
+    dividerTheme: DividerThemeData(color: colorScheme.outlineVariant),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: colorScheme.surfaceContainer,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
     // same density on all platforms so desktop matches mobile (defaults to compact on desktop)
     visualDensity: VisualDensity.standard,
     navigationBarTheme: colorScheme.brightness == Brightness.dark
@@ -63,19 +86,22 @@ ThemeData getTheme(ColorMode colorMode, Color customColor, Brightness brightness
       filled: true,
       fillColor: colorScheme.secondaryContainer,
       border: colorScheme.brightness == Brightness.light ? lightInputBorder : darkInputBorder,
-      focusedBorder: colorScheme.brightness == Brightness.light ? lightInputBorder : darkInputBorder,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: _borderRadius,
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+      ),
       enabledBorder: colorScheme.brightness == Brightness.light ? lightInputBorder : darkInputBorder,
       contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: colorScheme.brightness == Brightness.dark ? Colors.white : null,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     ),
     fontFamily: fontFamily,
@@ -142,7 +168,7 @@ extension InputDecorationThemeExt on InputDecorationThemeData {
 
 ColorScheme _determineColorScheme(ColorMode mode, Color customColor, Brightness brightness, DynamicColors? dynamicColors) {
   final defaultColorScheme = ColorScheme.fromSeed(
-    seedColor: Colors.teal,
+    seedColor: const Color(0xFFF97316),
     brightness: brightness,
   );
 
@@ -159,6 +185,24 @@ ColorScheme _determineColorScheme(ColorMode mode, Color customColor, Brightness 
     ),
   };
 
+  if (mode == ColorMode.localsend) {
+    final dark = brightness == Brightness.dark;
+    return defaultColorScheme.copyWith(
+      primary: const Color(0xFFF97316),
+      onPrimary: const Color(0xFF17191E),
+      secondary: const Color(0xFFF97316),
+      surface: dark ? const Color(0xFF17191E) : const Color(0xFFF6F7F9),
+      surfaceContainer: dark ? const Color(0xFF21252B) : Colors.white,
+      surfaceContainerHigh: dark ? const Color(0xFF2A3037) : const Color(0xFFECEFF3),
+      secondaryContainer: dark ? const Color(0xFF2A3037) : const Color(0xFFECEFF3),
+      onSecondaryContainer: dark ? const Color(0xFFF4F5F7) : const Color(0xFF17191E),
+      onSurface: dark ? const Color(0xFFF4F5F7) : const Color(0xFF17191E),
+      onSurfaceVariant: dark ? const Color(0xFFBBC2CC) : const Color(0xFF515B68),
+      outline: dark ? const Color(0xFF606B78) : const Color(0xFF74808E),
+      outlineVariant: dark ? const Color(0xFF343C47) : const Color(0xFFD5DAE1),
+      surfaceTint: Colors.transparent,
+    );
+  }
   return colorScheme ?? defaultColorScheme;
 }
 
@@ -190,19 +234,22 @@ ThemeData _getYaruTheme(Brightness brightness) {
       filled: true,
       fillColor: colorScheme.secondaryContainer,
       border: colorScheme.brightness == Brightness.light ? lightInputBorder : darkInputBorder,
-      focusedBorder: colorScheme.brightness == Brightness.light ? lightInputBorder : darkInputBorder,
+      focusedBorder: OutlineInputBorder(
+        borderRadius: _borderRadius,
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+      ),
       enabledBorder: colorScheme.brightness == Brightness.light ? lightInputBorder : darkInputBorder,
       contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: colorScheme.brightness == Brightness.dark ? Colors.white : null,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     ),
   );

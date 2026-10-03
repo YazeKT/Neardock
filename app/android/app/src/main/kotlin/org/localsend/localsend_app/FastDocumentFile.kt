@@ -1,4 +1,5 @@
-package org.localsend.localsend_app
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
+package io.github.yazekt.neardock
 
 import android.content.ContentResolver
 import android.content.Context

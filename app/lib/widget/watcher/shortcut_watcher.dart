@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -42,6 +43,13 @@ class ShortcutWatcher extends StatelessWidget {
           _PopPageIntent: CallbackAction(onInvoke: (_) async => Navigator.of(Routerino.context).maybePop()),
           _PasteIntent: CallbackAction(
             onInvoke: (_) async {
+              final editor = FocusManager.instance.primaryFocus?.context?.findAncestorStateOfType<EditableTextState>();
+              if (editor != null) {
+                await editor.pasteText(SelectionChangedCause.keyboard);
+                return null;
+              }
+              final tab = context.ref.read(homePageControllerProvider).currentTab;
+              if (tab == HomeTab.chat || tab == HomeTab.clipboard) return null;
               await context.global.dispatchAsync(PickFileAction(option: FilePickerOption.clipboard, context: context));
               if (context.mounted) {
                 context.redux(homePageControllerProvider).dispatch(ChangeTabAction(HomeTab.send));

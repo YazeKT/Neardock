@@ -24,6 +24,7 @@ import 'package:localsend_app/provider/purchase_provider.dart';
 import 'package:localsend_app/provider/selection/selected_sending_files_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/provider/tv_provider.dart';
+import 'package:localsend_app/provider/update_provider.dart';
 import 'package:localsend_app/provider/version_provider.dart';
 import 'package:localsend_app/provider/window_dimensions_provider.dart';
 import 'package:localsend_app/util/i18n.dart';
@@ -185,6 +186,14 @@ StreamSubscription? _sharedMediaSubscription;
 /// Will be called when home page has been initialized
 Future<void> postInit(BuildContext context, Ref ref, bool appStart) async {
   await updateSystemOverlayStyle(context);
+  if (appStart && ref.read(persistenceProvider).getOnboardingCompleted() && ref.read(persistenceProvider).getAutomaticUpdatesEnabled()) {
+    unawaited(
+      ref.notifier(neardockUpdateProvider).check().then((_) {
+        final update = ref.read(neardockUpdateProvider);
+        if (context.mounted && update.release != null) context.showSnackBar(update.message);
+      }),
+    );
+  }
 
   if (checkPlatform([TargetPlatform.android])) {
     try {

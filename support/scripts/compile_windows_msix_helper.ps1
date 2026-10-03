@@ -5,4 +5,4 @@
 # otherwise the shell cannot resolve the logos (e.g. blank icon in the Share dialog).
 MakePri.exe new /pr .\support\build\msix\content /cf .\support\build\msix\priconfig.xml /mn .\support\build\msix\content\AppxManifest.xml /of .\support\build\msix\content\resources.pri /o
 
-MakeAppx.exe pack /o /d .\support\build\msix\content /nv /p .\app\windows\localsend_msix_helper.msix
+MakeAppx.exe pack /o /d .\support\build\msix\content /nv /p .\app\windows\neardock_msix_helper.msix

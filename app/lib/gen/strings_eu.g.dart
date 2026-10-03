@@ -40,7 +40,7 @@ class TranslationsEu extends Translations with BaseTranslations<AppLocale, Trans
 
   // Translations
   @override
-  String get appName => 'LocalSend';
+  String get appName => 'Neardock';
   @override
   late final _Translations$general$eu general = _Translations$general$eu._(_root);
   @override
@@ -289,7 +289,7 @@ class _Translations$networkInterfacesPage$eu extends Translations$networkInterfa
   String get title => 'Sare interfazeak';
   @override
   String get info =>
-      'Lehenespenez, LocalSend-ek eskuragarri dauden sare-interfaze guztiak erabiltzen ditu. Nahi ez dituzun sareak hemen baztertu ditzakezu. Zerbitzaria berrabiarazi behar duzu aldaketak aplikatzeko.';
+      'Lehenespenez, Neardock-ek eskuragarri dauden sare-interfaze guztiak erabiltzen ditu. Nahi ez dituzun sareak hemen baztertu ditzakezu. Zerbitzaria berrabiarazi behar duzu aldaketak aplikatzeko.';
   @override
   String get preview => 'Aurrebista';
   @override
@@ -493,7 +493,7 @@ class _Translations$webSharePage$eu extends Translations$webSharePage$en {
   @override
   String pinHint({required Object pin}) => 'PINa "${pin}" da';
   @override
-  String get encryptionHint => 'LocalSend-ek autosinatutako zertifikatuak erabiltzen ditu. Nabigatzailean onartu behar duzu';
+  String get encryptionHint => 'Neardock-ek autosinatutako zertifikatuak erabiltzen ditu. Nabigatzailean onartu behar duzu';
   @override
   String pendingRequests({required Object n}) => 'Eskerak: ${n}';
 }
@@ -517,10 +517,10 @@ class _Translations$aboutPage$eu extends Translations$aboutPage$en {
 
   // Translations
   @override
-  String get title => 'LocalSend buruz';
+  String get title => 'Neardock buruz';
   @override
   List<String> get description => [
-    'LocalSend doako eta kode irekiko aplikazio bat da, gertuko gailuekin fitxategiak eta mezuak modu seguruan partekatzeko aukera ematen dizuna zure sare lokalaren bidez, interneteko konexiorik behar izan gabe.',
+    'Neardock doako eta kode irekiko aplikazio bat da, gertuko gailuekin fitxategiak eta mezuak modu seguruan partekatzeko aukera ematen dizuna zure sare lokalaren bidez, interneteko konexiorik behar izan gabe.',
     'Aplikazio hau Android, iOS, macOS, Windows eta Linux sistemetan dago eskuragarri. Deskarga-aukera guztiak webgune ofizialean aurki ditzakezu.',
   ];
   @override
@@ -660,7 +660,7 @@ class _Translations$tray$eu extends Translations$tray$en {
   @override
   String get open => _root.general.open;
   @override
-  String get close => 'Itxi LocalSend';
+  String get close => 'Itxi Neardock';
   @override
   String get closeWindows => 'Irten';
 }
@@ -871,7 +871,7 @@ class _Translations$settingsTab$general$eu extends Translations$settingsTab$gene
   @override
   String get launchMinimized => 'Hasieratze automatikoa: hasi txikituta';
   @override
-  String get showInContextMenu => 'Erakutsi LocalSend testuinguru menuan';
+  String get showInContextMenu => 'Erakutsi Neardock testuinguru menuan';
   @override
   String get animations => 'Animazioak';
 }
@@ -1326,7 +1326,7 @@ class _Translations$dialogs$localNetworkUnauthorized$eu extends Translations$dia
   String get title => _root.dialogs.noPermission.title;
   @override
   String get description =>
-      'Sare lokala eskaneatzeko baimenik gabe, LocalSend-ek ezin ditu inguruko gailuak aurkitu. Mesedez, onartu baimen hau ezarpenetan.';
+      'Sare lokala eskaneatzeko baimenik gabe, Neardock-ek ezin ditu inguruko gailuak aurkitu. Mesedez, onartu baimen hau ezarpenetan.';
   @override
   String get gotoSettings => 'Ezarpenak';
 }
@@ -1469,7 +1469,7 @@ class _Translations$dialogs$sendModeHelp$eu extends Translations$dialogs$sendMod
   @override
   String get multiple => 'Bidali fitxategiak hartzaile anitzeri. Aukeraketa ez da garbituko.';
   @override
-  String get link => 'LocalSend instalatuta ez duten hartzaileak fitxategiak eskuratu ahali zango dituzte lotura nabigatzailean zabalduz.';
+  String get link => 'Neardock instalatuta ez duten hartzaileak fitxategiak eskuratu ahali zango dituzte lotura nabigatzailean zabalduz.';
 }
 
 // Path: dialogs.zoom

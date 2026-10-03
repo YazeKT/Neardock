@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -23,7 +24,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "org.localsend.localsend_app"
+    namespace "io.github.yazekt.neardock"
     compileSdkVersion 36
     ndkVersion flutter.ndkVersion
 
@@ -41,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "org.localsend.localsend_app"
+        applicationId "io.github.yazekt.neardock"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion flutter.minSdkVersion

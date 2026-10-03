@@ -1,5 +1,5 @@
 {
-  "appName": "LocalSend",
+  "appName": "Neardock",
   "general": {
     "accept": "Accepta",
     "accepted": "Acceptat",
@@ -109,7 +109,7 @@
       "minimizeToTray": "Minimitza a la safata del sistema/barra de menú en tancar",
       "launchAtStartup": "Inici automàtic en iniciar la sessió",
       "launchMinimized": "Inici automàtic: Inici minimitzat",
-      "showInContextMenu": "Mostra el LocalSend al menú contextual",
+      "showInContextMenu": "Mostra el Neardock al menú contextual",
       "animations": "Animacions"
     },
     "receive": {
@@ -180,7 +180,7 @@
   },
   "networkInterfacesPage": {
     "title": "Interfícies de xarxa",
-    "info": "De manera predefinida, el LocalSend utilitza totes les interfícies de xarxa disponibles. Podeu excloure les xarxes no desitjades aquí. Cal que reinicieu el servidor per a aplicar els canvis.",
+    "info": "De manera predefinida, el Neardock utilitza totes les interfícies de xarxa disponibles. Podeu excloure les xarxes no desitjades aquí. Cal que reinicieu el servidor per a aplicar els canvis.",
     "preview": "Previsualitza",
     "whitelist": "Llista de permeses",
     "blacklist": "Llista de denegades"
@@ -241,7 +241,7 @@
   "receiveOptionsPage": {
     "title": "Opcions",
     "destination": "@:settingsTab.receive.destination",
-    "appDirectory": "(Carpeta LocalSend)",
+    "appDirectory": "(Carpeta Neardock)",
     "saveToGallery": "@:settingsTab.receive.saveToGallery",
     "saveToGalleryOff": "S'ha desactivat automàticament perquè hi ha carpetes."
   },
@@ -293,16 +293,16 @@
     "autoAccept": "Accepta les peticions automàticament",
     "requirePin": "Demana un PIN",
     "pinHint": "El PIN és «{pin}»",
-    "encryptionHint": "El LocalSend utilitza un certificat auto-signat. Cal que l'accepteu al navegador.",
+    "encryptionHint": "El Neardock utilitza un certificat auto-signat. Cal que l'accepteu al navegador.",
     "pendingRequests": "Peticions pendents: {n}"
   },
   "webReceivePage": {
     "title": "Rebre mitjançant enllaç"
   },
   "aboutPage": {
-    "title": "Quant al LocalSend",
+    "title": "Quant al Neardock",
     "description": [
-      "El LocalSend és una aplicació gratuïta i de codi obert que us permet compartir fitxers i missatges de manera segura amb dispositius propers a la vostra xarxa local sense necessitat de connexió a Internet.",
+      "El Neardock és una aplicació gratuïta i de codi obert que us permet compartir fitxers i missatges de manera segura amb dispositius propers a la vostra xarxa local sense necessitat de connexió a Internet.",
       "Aquesta aplicació està disponible per a Android, iOS, macOS, Windows i Linux. Podeu trobar totes les opcions de baixada a la pàgina d'inici oficial."
     ],
     "author": "Autor",
@@ -468,7 +468,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "El LocalSend no pot trobar altres dispositius sense tenir permís per a escanejar la xarxa local. Concediu aquest permís a la configuració.",
+      "description": "El Neardock no pot trobar altres dispositius sense tenir permís per a escanejar la xarxa local. Concediu aquest permís a la configuració.",
       "gotoSettings": "Configuració"
     },
     "messageInput": {
@@ -515,7 +515,7 @@
       "title": "Modes d'enviament",
       "single": "Envia fitxers a un destinatari. La selecció s'esborrarà un cop finalitzada la transferència de fitxers.",
       "multiple": "Envia fitxers a diversos destinataris. La selecció no s'esborrarà en finalitzar la trasferència.",
-      "link": "Els destinataris que no tinguin el LocalSend instal·lat poden baixar els fitxers seleccionats obrint l'enllaç al seu navegador."
+      "link": "Els destinataris que no tinguin el Neardock instal·lat poden baixar els fitxers seleccionats obrint l'enllaç al seu navegador."
     },
     "zoom": {
       "title": "URL"
@@ -528,7 +528,7 @@
   "tray": {
     "@info": "Les directrius d'Apple són molt estrictes quant a l'expressió «tanca».",
     "open": "@:general.open",
-    "close": "Surt del LocalSend",
+    "close": "Surt del Neardock",
     "closeWindows": "Surt"
   },
   "web": {

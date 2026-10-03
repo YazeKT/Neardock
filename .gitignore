@@ -14,6 +14,15 @@
 
 /secrets
 
+# Neardock local verification and release output
+/dist/
+/.local/
+**/*.jks
+**/*.keystore
+**/key.properties
+**/*.pfx
+**/*.p12
+
 # FVM Version Cache
 .fvm/
 

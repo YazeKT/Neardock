@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -57,7 +58,7 @@ Future<bool> isContextMenuEnabled() async {
   }
 }
 
-const _windowsFileName = 'LocalSend';
+const _windowsFileName = 'Neardock';
 
 String _getWindowsFilePath(String appName) {
   final appData = Platform.environment['APPDATA'];

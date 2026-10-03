@@ -1,5 +1,5 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'package:flutter/material.dart';
-import 'package:localsend_app/config/theme.dart';
 
 class CustomListTile extends StatelessWidget {
   final Widget? icon;
@@ -23,9 +23,10 @@ class CustomListTile extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
       ),
-      color: Theme.of(context).colorScheme.secondaryContainerIfDark,
+      color: Theme.of(context).colorScheme.surfaceContainer,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),
@@ -42,9 +43,7 @@ class CustomListTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    FittedBox(
-                      child: title,
-                    ),
+                    title,
                     const SizedBox(height: 5),
                     subTitle,
                   ],

@@ -1,5 +1,5 @@
 {
-  "appName": "LocalSend",
+  "appName": "Neardock",
   "general": {
     "accept": "Elfogad",
     "accepted": "Elfogadva",
@@ -109,7 +109,7 @@
       "minimizeToTray": "Kilépés: Minimalizálja a tálcára",
       "launchAtStartup": "Auto. indítás bejelentkezés után",
       "launchMinimized": "Auto. indítás: Kis méretben",
-      "showInContextMenu": "A LocalSend megjelenítése a helyi menüben",
+      "showInContextMenu": "A Neardock megjelenítése a helyi menüben",
       "animations": "Animációk"
     },
     "receive": {
@@ -180,7 +180,7 @@
   },
   "networkInterfacesPage": {
     "title": "Hálózati interfészek",
-    "info": "Alapértelmezésként a LocalSend az összes rendelkezésre álló hálózati interfészt használja. Itt kizárhatja a nem kívánt hálózatokat. A módosítások alkalmazásához újra kell indítania a kiszolgálót.",
+    "info": "Alapértelmezésként a Neardock az összes rendelkezésre álló hálózati interfészt használja. Itt kizárhatja a nem kívánt hálózatokat. A módosítások alkalmazásához újra kell indítania a kiszolgálót.",
     "preview": "Előnézet",
     "whitelist": "Fehérlista",
     "blacklist": "Tiltólista"
@@ -241,7 +241,7 @@
   "receiveOptionsPage": {
     "title": "Opciók",
     "destination": "@:settingsTab.receive.destination",
-    "appDirectory": "(LocalSend mappa)",
+    "appDirectory": "(Neardock mappa)",
     "saveToGallery": "@:settingsTab.receive.saveToGallery",
     "saveToGalleryOff": "Automatikusan kikapcsol, mert vannak könyvtárak."
   },
@@ -293,16 +293,16 @@
     "autoAccept": "Kérések automatikus elfogadása",
     "requirePin": "PIN kód megkövetelése",
     "pinHint": "A PIN kód \"{pin}\"",
-    "encryptionHint": "A LocalSend a saját aláírt tanúsítványt használja. A böngészőben kell elfogadnod.",
+    "encryptionHint": "A Neardock a saját aláírt tanúsítványt használja. A böngészőben kell elfogadnod.",
     "pendingRequests": "Függőben lévő kérések: {n}"
   },
   "webReceivePage": {
     "title": "Linken keresztüli fogadás"
   },
   "aboutPage": {
-    "title": "A LocalSend",
+    "title": "A Neardock",
     "description": [
-      "A LocalSend egy ingyenes, nyílt forráskódú alkalmazás, amely lehetővé teszi a fájlok és üzenetek biztonságos megosztását a közeli eszközökkel a helyi hálózaton keresztül, internet kapcsolat nélkül.",
+      "A Neardock egy ingyenes, nyílt forráskódú alkalmazás, amely lehetővé teszi a fájlok és üzenetek biztonságos megosztását a közeli eszközökkel a helyi hálózaton keresztül, internet kapcsolat nélkül.",
       "Ez az alkalmazás Android, iOS, macOS, Windows és Linux rendszereken érhető el. Az összes letöltési lehetőséget megtalálja a hivatalos honlapon."
     ],
     "author": "Szerző",
@@ -398,7 +398,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "A LocalSend nem találhat más eszközöket a helyi hálózat vizsgálatára vonatkozó engedély nélkül. Adja meg ezt az engedélyt a beállításokban.",
+      "description": "A Neardock nem találhat más eszközöket a helyi hálózat vizsgálatára vonatkozó engedély nélkül. Adja meg ezt az engedélyt a beállításokban.",
       "gotoSettings": "Beállítások"
     },
     "messageInput": {
@@ -445,7 +445,7 @@
       "title": "Küldési módok",
       "single": "Fájlokat küld egy címzettnek. Az átvitel befejezése után a kijelölés törlődik.",
       "multiple": "Fájlokat küld több címzettnek. A kijelölés nem törlődik.",
-      "link": "Azok a címzettek, akiknél nincs telepítve a LocalSend, letölthetik a kiválasztott fájlokat a hivatkozás megnyitásával a böngészőjükben."
+      "link": "Azok a címzettek, akiknél nincs telepítve a Neardock, letölthetik a kiválasztott fájlokat a hivatkozás megnyitásával a böngészőjükben."
     },
     "zoom": {
       "title": "URL"

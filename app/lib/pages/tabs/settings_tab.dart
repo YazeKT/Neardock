@@ -1,8 +1,9 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:localsend_app/config/theme.dart';
+
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
 import 'package:localsend_app/pages/about/about_page.dart';
@@ -10,6 +11,8 @@ import 'package:localsend_app/pages/changelog_page.dart';
 import 'package:localsend_app/pages/donation/donation_page.dart';
 import 'package:localsend_app/pages/settings/network_interfaces_page.dart';
 import 'package:localsend_app/pages/tabs/settings_tab_controller.dart';
+import 'package:localsend_app/pages/tabs/text_tab.dart';
+import 'package:localsend_app/provider/conversation_provider.dart';
 import 'package:localsend_app/provider/network/server/server_provider.dart';
 import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/provider/version_provider.dart';
@@ -28,6 +31,10 @@ import 'package:localsend_app/widget/dialogs/text_field_tv.dart';
 import 'package:localsend_app/widget/dialogs/text_field_with_actions.dart';
 import 'package:localsend_app/widget/labeled_checkbox.dart';
 import 'package:localsend_app/widget/local_send_logo.dart';
+import 'package:localsend_app/widget/neardock/diagnostics_panel.dart';
+import 'package:localsend_app/widget/neardock/known_devices_panel.dart';
+import 'package:localsend_app/widget/neardock/screen_header.dart';
+import 'package:localsend_app/widget/neardock/update_settings.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:localsend_isolates/constants.dart';
 import 'package:localsend_isolates/model/device.dart';
@@ -35,8 +42,16 @@ import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingsTab extends StatelessWidget {
-  const SettingsTab();
+class SettingsTab extends StatefulWidget {
+  final String? category;
+  const SettingsTab({this.category});
+  @override
+  State<SettingsTab> createState() => _SettingsTabState();
+}
+
+class _SettingsTabState extends State<SettingsTab> {
+  String _query = '';
+  final Set<String> _expanded = {};
 
   @override
   Widget build(BuildContext context) {
@@ -44,564 +59,694 @@ class SettingsTab extends StatelessWidget {
       provider: (ref) => settingsTabControllerProvider,
       builder: (context, vm) {
         final ref = context.ref;
-        return ResponsiveListView(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 40),
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(t.settingsTab.title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-            ),
-            const SizedBox(height: 30),
-            _SettingsSection(
-              title: t.settingsTab.general.title,
-              children: [
-                _SettingsEntry(
-                  label: t.settingsTab.general.brightness,
-                  child: CustomDropdownButton<ThemeMode>(
-                    value: vm.settings.theme,
-                    items: vm.themeModes.map((theme) {
-                      return DropdownMenuItem(
-                        value: theme,
-                        alignment: Alignment.center,
-                        child: Text(theme.humanName),
-                      );
-                    }).toList(),
-                    onChanged: (theme) => vm.onChangeTheme(context, theme),
+        final entries = <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text(t.settingsTab.title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+          ),
+          const SizedBox(height: 30),
+          _SettingsSection(
+            title: t.settingsTab.general.title,
+            children: [
+              _SettingsEntry(
+                label: t.settingsTab.general.brightness,
+                child: CustomDropdownButton<ThemeMode>(
+                  value: vm.settings.theme,
+                  items: vm.themeModes.map((theme) {
+                    return DropdownMenuItem(
+                      value: theme,
+                      alignment: Alignment.center,
+                      child: Text(theme.humanName),
+                    );
+                  }).toList(),
+                  onChanged: (theme) => vm.onChangeTheme(context, theme),
+                ),
+              ),
+              _SettingsEntry(
+                label: t.settingsTab.general.color,
+                child: CustomDropdownButton<ColorMode>(
+                  value: vm.settings.colorMode,
+                  items: vm.colorModes.map((colorMode) {
+                    return DropdownMenuItem(
+                      value: colorMode,
+                      alignment: Alignment.center,
+                      child: Text(colorMode.humanName, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (colorMode) => vm.onChangeColorMode(context, colorMode),
+                ),
+              ),
+              _ButtonEntry(
+                label: t.settingsTab.general.language,
+                buttonLabel: vm.settings.locale?.getLocaleName() ?? t.settingsTab.general.languageOptions.system,
+                onTap: () => vm.onTapLanguage(context),
+              ),
+              if (checkPlatformIsDesktop()) ...[
+                /// Wayland does window position handling, so there's no need for it. See [https://github.com/localsend/localsend/issues/544]
+                if (vm.advanced && checkPlatformIsNotWaylandDesktop())
+                  _BooleanEntry(
+                    label: defaultTargetPlatform == TargetPlatform.windows
+                        ? t.settingsTab.general.saveWindowPlacementWindows
+                        : t.settingsTab.general.saveWindowPlacement,
+                    value: vm.settings.saveWindowPlacement,
+                    onChanged: (b) async {
+                      await ref.notifier(settingsProvider).setSaveWindowPlacement(b);
+                    },
                   ),
-                ),
-                _SettingsEntry(
-                  label: t.settingsTab.general.color,
-                  child: CustomDropdownButton<ColorMode>(
-                    value: vm.settings.colorMode,
-                    items: vm.colorModes.map((colorMode) {
-                      return DropdownMenuItem(
-                        value: colorMode,
-                        alignment: Alignment.center,
-                        child: Text(colorMode.humanName, overflow: TextOverflow.ellipsis),
-                      );
-                    }).toList(),
-                    onChanged: (colorMode) => vm.onChangeColorMode(context, colorMode),
+                if (checkPlatformHasTray()) ...[
+                  _BooleanEntry(
+                    label: t.settingsTab.general.minimizeToTray,
+                    value: vm.settings.minimizeToTray,
+                    onChanged: (b) async {
+                      await ref.notifier(settingsProvider).setMinimizeToTray(b);
+                    },
                   ),
-                ),
-                _ButtonEntry(
-                  label: t.settingsTab.general.language,
-                  buttonLabel: vm.settings.locale?.getLocaleName() ?? t.settingsTab.general.languageOptions.system,
-                  onTap: () => vm.onTapLanguage(context),
-                ),
+                ],
                 if (checkPlatformIsDesktop()) ...[
-                  /// Wayland does window position handling, so there's no need for it. See [https://github.com/localsend/localsend/issues/544]
-                  if (vm.advanced && checkPlatformIsNotWaylandDesktop())
-                    _BooleanEntry(
-                      label: defaultTargetPlatform == TargetPlatform.windows
-                          ? t.settingsTab.general.saveWindowPlacementWindows
-                          : t.settingsTab.general.saveWindowPlacement,
-                      value: vm.settings.saveWindowPlacement,
-                      onChanged: (b) async {
-                        await ref.notifier(settingsProvider).setSaveWindowPlacement(b);
-                      },
-                    ),
-                  if (checkPlatformHasTray()) ...[
-                    _BooleanEntry(
-                      label: t.settingsTab.general.minimizeToTray,
-                      value: vm.settings.minimizeToTray,
-                      onChanged: (b) async {
-                        await ref.notifier(settingsProvider).setMinimizeToTray(b);
-                      },
-                    ),
-                  ],
-                  if (checkPlatformIsDesktop()) ...[
-                    _BooleanEntry(
-                      label: t.settingsTab.general.launchAtStartup,
-                      value: vm.autoStart,
-                      onChanged: (_) => vm.onToggleAutoStart(context),
-                    ),
-                    Visibility(
-                      visible: vm.autoStart,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: AnimatedOpacity(
-                        opacity: vm.autoStart ? 1.0 : 0.0,
-                        duration: const Duration(milliseconds: 500),
-                        child: _BooleanEntry(
-                          label: t.settingsTab.general.launchMinimized,
-                          value: vm.autoStartLaunchHidden,
-                          onChanged: (_) => vm.onToggleAutoStartLaunchHidden(context),
-                        ),
+                  _BooleanEntry(
+                    label: t.settingsTab.general.launchAtStartup,
+                    value: vm.autoStart,
+                    onChanged: (_) => vm.onToggleAutoStart(context),
+                  ),
+                  Visibility(
+                    visible: vm.autoStart,
+                    maintainAnimation: true,
+                    maintainState: true,
+                    child: AnimatedOpacity(
+                      opacity: vm.autoStart ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: _BooleanEntry(
+                        label: t.settingsTab.general.launchMinimized,
+                        value: vm.autoStartLaunchHidden,
+                        onChanged: (_) => vm.onToggleAutoStartLaunchHidden(context),
                       ),
                     ),
-                  ],
-                  if (vm.advanced && checkPlatform([TargetPlatform.windows])) ...[
-                    _BooleanEntry(
-                      label: t.settingsTab.general.showInContextMenu,
-                      value: vm.showInContextMenu,
-                      onChanged: (_) => vm.onToggleShowInContextMenu(context),
-                    ),
-                  ],
+                  ),
                 ],
-                _BooleanEntry(
-                  label: t.settingsTab.general.animations,
-                  value: vm.settings.enableAnimations,
-                  onChanged: (b) async {
-                    await ref.notifier(settingsProvider).setEnableAnimations(b);
-                  },
-                ),
+                if (vm.advanced && checkPlatform([TargetPlatform.windows])) ...[
+                  _BooleanEntry(
+                    label: t.settingsTab.general.showInContextMenu,
+                    value: vm.showInContextMenu,
+                    onChanged: (_) => vm.onToggleShowInContextMenu(context),
+                  ),
+                ],
               ],
-            ),
-            _SettingsSection(
-              title: t.settingsTab.receive.title,
-              children: [
-                _BooleanEntry(
-                  label: t.settingsTab.receive.quickSave,
-                  value: vm.settings.quickSave,
-                  onChanged: (b) async {
-                    final old = vm.settings.quickSave;
-                    await ref.notifier(settingsProvider).setQuickSave(b);
-                    if (b) {
-                      await ref.notifier(settingsProvider).setQuickSaveFromFavorites(false);
-                    }
-                    if (!old && b && context.mounted) {
-                      await QuickSaveNotice.open(context);
-                    }
-                  },
-                ),
-                _BooleanEntry(
-                  label: t.settingsTab.receive.quickSaveFromFavorites,
-                  value: vm.settings.quickSaveFromFavorites,
-                  onChanged: (b) async {
-                    final old = vm.settings.quickSaveFromFavorites;
-                    await ref.notifier(settingsProvider).setQuickSaveFromFavorites(b);
-                    if (b) {
-                      await ref.notifier(settingsProvider).setQuickSave(false);
-                    }
-                    if (!old && b && context.mounted) {
-                      await QuickSaveFromFavoritesNotice.open(context);
-                    }
-                  },
-                ),
-                _BooleanEntry(
-                  label: t.settingsTab.receive.requirePin,
-                  value: vm.settings.receivePin != null,
-                  onChanged: (b) async {
-                    final currentPIN = vm.settings.receivePin;
-                    if (currentPIN != null) {
-                      await ref.notifier(settingsProvider).setReceivePin(null);
-                    } else {
-                      final String? newPin = await showDialog<String>(
-                        context: context,
-                        builder: (_) => const PinDialog(
-                          obscureText: false,
-                          generateRandom: false,
-                        ),
-                      );
+              _BooleanEntry(
+                label: t.settingsTab.general.animations,
+                value: vm.settings.enableAnimations,
+                onChanged: (b) async {
+                  await ref.notifier(settingsProvider).setEnableAnimations(b);
+                },
+              ),
+            ],
+          ),
+          _SettingsSection(
+            title: t.settingsTab.receive.title,
+            children: [
+              _BooleanEntry(
+                label: t.settingsTab.receive.quickSave,
+                value: vm.settings.quickSave,
+                onChanged: (b) async {
+                  final old = vm.settings.quickSave;
+                  await ref.notifier(settingsProvider).setQuickSave(b);
+                  if (b) {
+                    await ref.notifier(settingsProvider).setQuickSaveFromFavorites(false);
+                  }
+                  if (!old && b && context.mounted) {
+                    await QuickSaveNotice.open(context);
+                  }
+                },
+              ),
+              _BooleanEntry(
+                label: t.settingsTab.receive.quickSaveFromFavorites,
+                value: vm.settings.quickSaveFromFavorites,
+                onChanged: (b) async {
+                  final old = vm.settings.quickSaveFromFavorites;
+                  await ref.notifier(settingsProvider).setQuickSaveFromFavorites(b);
+                  if (b) {
+                    await ref.notifier(settingsProvider).setQuickSave(false);
+                  }
+                  if (!old && b && context.mounted) {
+                    await QuickSaveFromFavoritesNotice.open(context);
+                  }
+                },
+              ),
+              _BooleanEntry(
+                label: t.settingsTab.receive.requirePin,
+                value: vm.settings.receivePin != null,
+                onChanged: (b) async {
+                  final currentPIN = vm.settings.receivePin;
+                  if (currentPIN != null) {
+                    await ref.notifier(settingsProvider).setReceivePin(null);
+                  } else {
+                    final String? newPin = await showDialog<String>(
+                      context: context,
+                      builder: (_) => const PinDialog(
+                        obscureText: false,
+                        generateRandom: false,
+                      ),
+                    );
 
-                      if (newPin != null && newPin.isNotEmpty) {
-                        await ref.notifier(settingsProvider).setReceivePin(newPin);
+                    if (newPin != null && newPin.isNotEmpty) {
+                      await ref.notifier(settingsProvider).setReceivePin(newPin);
+                    }
+                  }
+
+                  // The pin is enforced by the Rust server, so it needs a restart.
+                  if (ref.read(serverProvider) != null) {
+                    await ref.notifier(serverProvider).restartServerFromSettings();
+                  }
+                },
+              ),
+              if (checkPlatformWithFileSystem())
+                _SettingsEntry(
+                  label: t.settingsTab.receive.destination,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Theme.of(context).inputDecorationTheme.fillColor,
+                      shape: RoundedRectangleBorder(borderRadius: Theme.of(context).inputDecorationTheme.borderRadius),
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    onPressed: () async {
+                      if (vm.settings.destination != null) {
+                        await ref.notifier(settingsProvider).setDestination(null);
+                        if (defaultTargetPlatform == TargetPlatform.macOS) {
+                          await removeExistingDestinationAccess();
+                        }
+                        return;
                       }
-                    }
 
-                    // The pin is enforced by the Rust server, so it needs a restart.
+                      final directory = await pickDirectoryPath();
+                      if (directory != null) {
+                        if (defaultTargetPlatform == TargetPlatform.macOS) {
+                          await persistDestinationFolderAccess(directory);
+                        }
+                        await ref.notifier(settingsProvider).setDestination(directory);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Text(vm.settings.destination ?? t.settingsTab.receive.downloads, style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                  ),
+                ),
+              if (checkPlatformWithGallery())
+                _BooleanEntry(
+                  label: t.settingsTab.receive.saveToGallery,
+                  value: vm.settings.saveToGallery,
+                  onChanged: (b) async {
+                    await ref.notifier(settingsProvider).setSaveToGallery(b);
+                  },
+                ),
+              _BooleanEntry(
+                label: t.settingsTab.receive.autoFinish,
+                value: vm.settings.autoFinish,
+                onChanged: (b) async {
+                  await ref.notifier(settingsProvider).setAutoFinish(b);
+                },
+              ),
+              _BooleanEntry(
+                label: t.settingsTab.receive.saveToHistory,
+                value: vm.settings.saveToHistory,
+                onChanged: (b) async {
+                  await ref.notifier(settingsProvider).setSaveToHistory(b);
+                },
+              ),
+              if (vm.advanced)
+                _BooleanEntry(
+                  label: t.settingsTab.receive.verifyChecksums,
+                  value: vm.settings.verifyChecksums,
+                  onChanged: (b) async {
+                    await ref.notifier(settingsProvider).setVerifyChecksums(b);
+
+                    // The checksums are verified by the Rust server, so it needs a restart.
                     if (ref.read(serverProvider) != null) {
                       await ref.notifier(serverProvider).restartServerFromSettings();
                     }
                   },
                 ),
-                if (checkPlatformWithFileSystem())
-                  _SettingsEntry(
-                    label: t.settingsTab.receive.destination,
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: Theme.of(context).inputDecorationTheme.fillColor,
-                        shape: RoundedRectangleBorder(borderRadius: Theme.of(context).inputDecorationTheme.borderRadius),
-                        foregroundColor: Theme.of(context).colorScheme.onSurface,
-                      ),
-                      onPressed: () async {
-                        if (vm.settings.destination != null) {
-                          await ref.notifier(settingsProvider).setDestination(null);
-                          if (defaultTargetPlatform == TargetPlatform.macOS) {
-                            await removeExistingDestinationAccess();
-                          }
-                          return;
-                        }
-
-                        final directory = await pickDirectoryPath();
-                        if (directory != null) {
-                          if (defaultTargetPlatform == TargetPlatform.macOS) {
-                            await persistDestinationFolderAccess(directory);
-                          }
-                          await ref.notifier(settingsProvider).setDestination(directory);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Text(vm.settings.destination ?? t.settingsTab.receive.downloads, style: Theme.of(context).textTheme.titleMedium),
-                      ),
-                    ),
-                  ),
-                if (checkPlatformWithGallery())
-                  _BooleanEntry(
-                    label: t.settingsTab.receive.saveToGallery,
-                    value: vm.settings.saveToGallery,
-                    onChanged: (b) async {
-                      await ref.notifier(settingsProvider).setSaveToGallery(b);
-                    },
-                  ),
+            ],
+          ),
+          if (vm.advanced)
+            _SettingsSection(
+              title: t.settingsTab.send.title,
+              children: [
                 _BooleanEntry(
-                  label: t.settingsTab.receive.autoFinish,
-                  value: vm.settings.autoFinish,
+                  label: t.settingsTab.send.shareViaLinkAutoAccept,
+                  value: vm.settings.shareViaLinkAutoAccept,
                   onChanged: (b) async {
-                    await ref.notifier(settingsProvider).setAutoFinish(b);
+                    await ref.notifier(settingsProvider).setShareViaLinkAutoAccept(b);
                   },
                 ),
                 _BooleanEntry(
-                  label: t.settingsTab.receive.saveToHistory,
-                  value: vm.settings.saveToHistory,
+                  label: t.settingsTab.send.createChecksums,
+                  value: vm.settings.createChecksums,
                   onChanged: (b) async {
-                    await ref.notifier(settingsProvider).setSaveToHistory(b);
+                    await ref.notifier(settingsProvider).setCreateChecksums(b);
                   },
                 ),
-                if (vm.advanced)
-                  _BooleanEntry(
-                    label: t.settingsTab.receive.verifyChecksums,
-                    value: vm.settings.verifyChecksums,
-                    onChanged: (b) async {
-                      await ref.notifier(settingsProvider).setVerifyChecksums(b);
-
-                      // The checksums are verified by the Rust server, so it needs a restart.
-                      if (ref.read(serverProvider) != null) {
-                        await ref.notifier(serverProvider).restartServerFromSettings();
-                      }
-                    },
-                  ),
               ],
             ),
-            if (vm.advanced)
-              _SettingsSection(
-                title: t.settingsTab.send.title,
-                children: [
-                  _BooleanEntry(
-                    label: t.settingsTab.send.shareViaLinkAutoAccept,
-                    value: vm.settings.shareViaLinkAutoAccept,
-                    onChanged: (b) async {
-                      await ref.notifier(settingsProvider).setShareViaLinkAutoAccept(b);
-                    },
-                  ),
-                  _BooleanEntry(
-                    label: t.settingsTab.send.createChecksums,
-                    value: vm.settings.createChecksums,
-                    onChanged: (b) async {
-                      await ref.notifier(settingsProvider).setCreateChecksums(b);
-                    },
-                  ),
-                ],
-              ),
-            _SettingsSection(
-              title: t.settingsTab.network.title,
-              children: [
-                AnimatedCrossFade(
-                  crossFadeState:
-                      vm.serverState != null &&
-                          (vm.serverState!.alias != vm.settings.alias ||
-                              vm.serverState!.port != vm.settings.port ||
-                              vm.serverState!.https != vm.settings.https)
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 200),
-                  alignment: Alignment.topLeft,
-                  firstChild: Container(),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    child: Text(t.settingsTab.network.needRestart, style: TextStyle(color: Theme.of(context).colorScheme.warning)),
-                  ),
+          _SettingsSection(
+            title: t.settingsTab.network.title,
+            children: [
+              AnimatedCrossFade(
+                crossFadeState:
+                    vm.serverState != null &&
+                        (vm.serverState!.alias != vm.settings.alias ||
+                            vm.serverState!.port != vm.settings.port ||
+                            vm.serverState!.https != vm.settings.https)
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 200),
+                alignment: Alignment.topLeft,
+                firstChild: Container(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(t.settingsTab.network.needRestart, style: TextStyle(color: Theme.of(context).colorScheme.warning)),
                 ),
-                _SettingsEntry(
-                  label: '${t.settingsTab.network.server}${vm.serverState == null ? ' (${t.general.offline})' : ''}',
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).inputDecorationTheme.fillColor,
-                      borderRadius: Theme.of(context).inputDecorationTheme.borderRadius,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        if (vm.serverState == null)
-                          Tooltip(
-                            message: t.general.start,
-                            child: TextButton(
-                              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, iconSize: 24),
-                              onPressed: () => vm.onTapStartServer(context),
-                              child: const Icon(Icons.play_arrow),
-                            ),
-                          )
-                        else
-                          Tooltip(
-                            message: t.general.restart,
-                            child: TextButton(
-                              style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, iconSize: 24),
-                              onPressed: () => vm.onTapRestartServer(context),
-                              child: const Icon(Icons.refresh),
-                            ),
-                          ),
+              ),
+              _SettingsEntry(
+                label: '${t.settingsTab.network.server}${vm.serverState == null ? ' (${t.general.offline})' : ''}',
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).inputDecorationTheme.fillColor,
+                    borderRadius: Theme.of(context).inputDecorationTheme.borderRadius,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      if (vm.serverState == null)
                         Tooltip(
-                          message: t.general.stop,
+                          message: t.general.start,
                           child: TextButton(
                             style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, iconSize: 24),
-                            onPressed: vm.serverState == null ? null : vm.onTapStopServer,
-                            child: const Icon(Icons.stop),
+                            onPressed: () => vm.onTapStartServer(context),
+                            child: const Icon(Icons.play_arrow),
+                          ),
+                        )
+                      else
+                        Tooltip(
+                          message: t.general.restart,
+                          child: TextButton(
+                            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, iconSize: 24),
+                            onPressed: () => vm.onTapRestartServer(context),
+                            child: const Icon(Icons.refresh),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                _SettingsEntry(
-                  label: t.settingsTab.network.alias,
-                  child: TextFieldWithActions(
-                    name: t.settingsTab.network.alias,
-                    controller: vm.aliasController,
-                    onChanged: (s) async {
-                      await ref.notifier(settingsProvider).setAlias(s);
-                    },
-                    actions: [
                       Tooltip(
-                        message: t.settingsTab.network.generateRandomAlias,
-                        child: IconButton(
-                          onPressed: () async {
-                            // Generates random alias
-                            final newAlias = generateRandomAlias();
-
-                            // Update the TextField with the new alias
-                            vm.aliasController.text = newAlias;
-
-                            // Persist the new alias using the settingsProvider
-                            await ref.notifier(settingsProvider).setAlias(newAlias);
-                          },
-                          icon: const Icon(Icons.casino),
-                        ),
-                      ),
-                      Tooltip(
-                        message: t.settingsTab.network.useSystemName,
-                        child: IconButton(
-                          onPressed: () async {
-                            final String newAlias;
-                            if (Platform.isMacOS) {
-                              final result = await Process.run('scutil', ['--get', 'ComputerName']);
-                              newAlias = result.stdout.toString().trim();
-                            } else {
-                              newAlias = Platform.localHostname;
-                            }
-
-                            vm.aliasController.text = newAlias;
-                            await ref.notifier(settingsProvider).setAlias(newAlias);
-                          },
-                          icon: const Icon(Icons.desktop_windows_rounded),
+                        message: t.general.stop,
+                        child: TextButton(
+                          style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurface, iconSize: 24),
+                          onPressed: vm.serverState == null ? null : vm.onTapStopServer,
+                          child: const Icon(Icons.stop),
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (vm.advanced)
-                  _SettingsEntry(
-                    label: t.settingsTab.network.deviceType,
-                    child: CustomDropdownButton<DeviceType>(
-                      value: vm.deviceInfo.deviceType,
-                      items: DeviceType.values.map((type) {
-                        return DropdownMenuItem(
-                          value: type,
-                          alignment: Alignment.center,
-                          child: Icon(type.icon),
-                        );
-                      }).toList(),
-                      onChanged: (type) async {
-                        await ref.notifier(settingsProvider).setDeviceType(type);
-                      },
+              ),
+              _SettingsEntry(
+                label: t.settingsTab.network.alias,
+                child: TextFieldWithActions(
+                  name: t.settingsTab.network.alias,
+                  controller: vm.aliasController,
+                  onChanged: (s) async {
+                    await ref.notifier(settingsProvider).setAlias(s);
+                  },
+                  actions: [
+                    Tooltip(
+                      message: t.settingsTab.network.generateRandomAlias,
+                      child: IconButton(
+                        onPressed: () async {
+                          // Generates random alias
+                          final newAlias = generateRandomAlias();
+
+                          // Update the TextField with the new alias
+                          vm.aliasController.text = newAlias;
+
+                          // Persist the new alias using the settingsProvider
+                          await ref.notifier(settingsProvider).setAlias(newAlias);
+                        },
+                        icon: const Icon(Icons.casino),
+                      ),
                     ),
-                  ),
-                if (vm.advanced)
-                  _SettingsEntry(
-                    label: t.settingsTab.network.deviceModel,
-                    child: TextFieldTv(
-                      name: t.settingsTab.network.deviceModel,
-                      controller: vm.deviceModelController,
-                      onChanged: (s) async {
-                        await ref.notifier(settingsProvider).setDeviceModel(s);
-                      },
+                    Tooltip(
+                      message: t.settingsTab.network.useSystemName,
+                      child: IconButton(
+                        onPressed: () async {
+                          final String newAlias;
+                          if (Platform.isMacOS) {
+                            final result = await Process.run('scutil', ['--get', 'ComputerName']);
+                            newAlias = result.stdout.toString().trim();
+                          } else {
+                            newAlias = Platform.localHostname;
+                          }
+
+                          vm.aliasController.text = newAlias;
+                          await ref.notifier(settingsProvider).setAlias(newAlias);
+                        },
+                        icon: const Icon(Icons.desktop_windows_rounded),
+                      ),
                     ),
-                  ),
-                if (vm.advanced)
-                  _SettingsEntry(
-                    label: t.settingsTab.network.port,
-                    child: TextFieldTv(
-                      name: t.settingsTab.network.port,
-                      controller: vm.portController,
-                      onChanged: (s) async {
-                        final port = int.tryParse(s);
-                        if (port != null) {
-                          await ref.notifier(settingsProvider).setPort(port);
-                        }
-                      },
-                    ),
-                  ),
-                if (vm.advanced)
-                  _ButtonEntry(
-                    label: t.settingsTab.network.network,
-                    buttonLabel: switch (vm.settings.networkWhitelist != null || vm.settings.networkBlacklist != null) {
-                      true => t.settingsTab.network.networkOptions.filtered,
-                      false => t.settingsTab.network.networkOptions.all,
+                  ],
+                ),
+              ),
+              if (vm.advanced)
+                _SettingsEntry(
+                  label: t.settingsTab.network.deviceType,
+                  child: CustomDropdownButton<DeviceType>(
+                    value: vm.deviceInfo.deviceType,
+                    items: DeviceType.values.map((type) {
+                      return DropdownMenuItem(
+                        value: type,
+                        alignment: Alignment.center,
+                        child: Icon(type.icon),
+                      );
+                    }).toList(),
+                    onChanged: (type) async {
+                      await ref.notifier(settingsProvider).setDeviceType(type);
                     },
-                    onTap: () async {
-                      await context.push(() => const NetworkInterfacesPage());
+                  ),
+                ),
+              if (vm.advanced)
+                _SettingsEntry(
+                  label: t.settingsTab.network.deviceModel,
+                  child: TextFieldTv(
+                    name: t.settingsTab.network.deviceModel,
+                    controller: vm.deviceModelController,
+                    onChanged: (s) async {
+                      await ref.notifier(settingsProvider).setDeviceModel(s);
                     },
                   ),
-                if (vm.advanced)
-                  _SettingsEntry(
-                    label: t.settingsTab.network.discoveryTimeout,
-                    child: TextFieldTv(
-                      name: t.settingsTab.network.discoveryTimeout,
-                      controller: vm.timeoutController,
-                      onChanged: (s) async {
-                        final timeout = int.tryParse(s);
-                        if (timeout != null) {
-                          await ref.notifier(settingsProvider).setDiscoveryTimeout(timeout);
-                        }
-                      },
-                    ),
-                  ),
-                if (vm.advanced)
-                  _BooleanEntry(
-                    label: t.settingsTab.network.encryption,
-                    value: vm.settings.https,
-                    onChanged: (b) async {
-                      final old = vm.settings.https;
-                      await ref.notifier(settingsProvider).setHttps(b);
-                      if (old && !b && context.mounted) {
-                        await EncryptionDisabledNotice.open(context);
+                ),
+              if (vm.advanced)
+                _SettingsEntry(
+                  label: t.settingsTab.network.port,
+                  child: TextFieldTv(
+                    name: t.settingsTab.network.port,
+                    controller: vm.portController,
+                    onChanged: (s) async {
+                      final port = int.tryParse(s);
+                      if (port != null) {
+                        await ref.notifier(settingsProvider).setPort(port);
                       }
                     },
                   ),
-                if (vm.advanced)
-                  _SettingsEntry(
-                    label: t.settingsTab.network.multicastGroup,
-                    child: TextFieldTv(
-                      name: t.settingsTab.network.multicastGroup,
-                      controller: vm.multicastController,
-                      onChanged: (s) async {
-                        await ref.notifier(settingsProvider).setMulticastGroup(s);
-                      },
-                    ),
-                  ),
-                AnimatedCrossFade(
-                  crossFadeState: vm.settings.port != defaultPort ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 200),
-                  alignment: Alignment.topLeft,
-                  firstChild: Container(),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    child: Text(
-                      t.settingsTab.network.portWarning(defaultPort: defaultPort),
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
                 ),
-                AnimatedCrossFade(
-                  crossFadeState: vm.settings.multicastGroup != defaultMulticastGroup ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 200),
-                  alignment: Alignment.topLeft,
-                  firstChild: Container(),
-                  secondChild: Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    child: Text(
-                      t.settingsTab.network.multicastGroupWarning(defaultMulticast: defaultMulticastGroup),
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            _SettingsSection(
-              title: t.settingsTab.other.title,
-              padding: const EdgeInsets.only(bottom: 0),
-              children: [
+              if (vm.advanced)
                 _ButtonEntry(
-                  label: t.aboutPage.title,
-                  buttonLabel: t.general.open,
+                  label: t.settingsTab.network.network,
+                  buttonLabel: switch (vm.settings.networkWhitelist != null || vm.settings.networkBlacklist != null) {
+                    true => t.settingsTab.network.networkOptions.filtered,
+                    false => t.settingsTab.network.networkOptions.all,
+                  },
                   onTap: () async {
-                    await context.push(() => const AboutPage());
+                    await context.push(() => const NetworkInterfacesPage());
                   },
                 ),
-                _ButtonEntry(
-                  label: t.settingsTab.other.support,
-                  buttonLabel: t.settingsTab.other.donate,
-                  onTap: () async {
-                    await context.push(() => const DonationPage());
+              if (vm.advanced)
+                _SettingsEntry(
+                  label: t.settingsTab.network.discoveryTimeout,
+                  child: TextFieldTv(
+                    name: t.settingsTab.network.discoveryTimeout,
+                    controller: vm.timeoutController,
+                    onChanged: (s) async {
+                      final timeout = int.tryParse(s);
+                      if (timeout != null) {
+                        await ref.notifier(settingsProvider).setDiscoveryTimeout(timeout);
+                      }
+                    },
+                  ),
+                ),
+              if (vm.advanced)
+                _BooleanEntry(
+                  label: t.settingsTab.network.encryption,
+                  value: vm.settings.https,
+                  onChanged: (b) async {
+                    final old = vm.settings.https;
+                    await ref.notifier(settingsProvider).setHttps(b);
+                    if (old && !b && context.mounted) {
+                      await EncryptionDisabledNotice.open(context);
+                    }
                   },
                 ),
+              if (vm.advanced)
+                _SettingsEntry(
+                  label: t.settingsTab.network.multicastGroup,
+                  child: TextFieldTv(
+                    name: t.settingsTab.network.multicastGroup,
+                    controller: vm.multicastController,
+                    onChanged: (s) async {
+                      await ref.notifier(settingsProvider).setMulticastGroup(s);
+                    },
+                  ),
+                ),
+              AnimatedCrossFade(
+                crossFadeState: vm.settings.port != defaultPort ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 200),
+                alignment: Alignment.topLeft,
+                firstChild: Container(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    t.settingsTab.network.portWarning(defaultPort: defaultPort),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+              AnimatedCrossFade(
+                crossFadeState: vm.settings.multicastGroup != defaultMulticastGroup ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 200),
+                alignment: Alignment.topLeft,
+                firstChild: Container(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    t.settingsTab.network.multicastGroupWarning(defaultMulticast: defaultMulticastGroup),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          _SettingsSection(
+            title: t.settingsTab.other.title,
+            padding: const EdgeInsets.only(bottom: 0),
+            children: [
+              _ButtonEntry(
+                label: t.aboutPage.title,
+                buttonLabel: t.general.open,
+                onTap: () async {
+                  await context.push(() => const AboutPage());
+                },
+              ),
+              _ButtonEntry(
+                label: t.settingsTab.other.support,
+                buttonLabel: t.settingsTab.other.donate,
+                onTap: () async {
+                  await context.push(() => const DonationPage());
+                },
+              ),
+              _ButtonEntry(
+                label: t.settingsTab.other.privacyPolicy,
+                buttonLabel: t.general.open,
+                onTap: () async {
+                  await launchUrl(
+                    Uri.parse('https://yazekt.github.io/Neardock/privacy.html'),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+              ),
+              if (checkPlatform([TargetPlatform.iOS, TargetPlatform.macOS]))
                 _ButtonEntry(
-                  label: t.settingsTab.other.privacyPolicy,
+                  label: t.settingsTab.other.termsOfUse,
                   buttonLabel: t.general.open,
                   onTap: () async {
                     await launchUrl(
-                      Uri.parse('https://localsend.org/privacy'),
+                      Uri.parse('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
                       mode: LaunchMode.externalApplication,
                     );
                   },
                 ),
-                if (checkPlatform([TargetPlatform.iOS, TargetPlatform.macOS]))
-                  _ButtonEntry(
-                    label: t.settingsTab.other.termsOfUse,
-                    buttonLabel: t.general.open,
-                    onTap: () async {
-                      await launchUrl(
-                        Uri.parse('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/'),
-                        mode: LaunchMode.externalApplication,
-                      );
-                    },
-                  ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                LabeledCheckbox(
-                  label: t.settingsTab.advancedSettings,
-                  value: vm.advanced,
-                  labelFirst: true,
-                  onChanged: (b) async {
-                    vm.onTapAdvanced(b == true);
-                    await ref.notifier(settingsProvider).setAdvancedSettingsEnabled(b == true);
-                  },
-                ),
-                const SizedBox(width: 10),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const LocalSendLogo(withText: true),
-            const SizedBox(height: 5),
-            ref
-                .watch(versionProvider)
-                .maybeWhen(
-                  data: (version) => Text(
-                    'Version: ${version.combinedString}',
-                    textAlign: TextAlign.center,
-                  ),
-                  orElse: () => Container(),
-                ),
-            Text(
-              '© ${DateTime.now().year} Tien Do Nam',
-              textAlign: TextAlign.center,
-            ),
-            Center(
-              child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.onSurface,
-                ),
-                onPressed: () async {
-                  await context.push(() => const ChangelogPage());
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              LabeledCheckbox(
+                label: t.settingsTab.advancedSettings,
+                value: vm.advanced,
+                labelFirst: true,
+                onChanged: (b) async {
+                  vm.onTapAdvanced(b == true);
+                  await ref.notifier(settingsProvider).setAdvancedSettingsEnabled(b == true);
                 },
-                icon: const Icon(Icons.history),
-                label: Text(t.changelogPage.title),
               ),
+              const SizedBox(width: 10),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const LocalSendLogo(withText: true),
+          const SizedBox(height: 5),
+          ref
+              .watch(versionProvider)
+              .maybeWhen(
+                data: (version) => Text(
+                  'Version: ${version.combinedString}',
+                  textAlign: TextAlign.center,
+                ),
+                orElse: () => Container(),
+              ),
+          Text(
+            '© ${DateTime.now().year} Yaze Media',
+            textAlign: TextAlign.center,
+          ),
+          Center(
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+              ),
+              onPressed: () async {
+                await context.push(() => const ChangelogPage());
+              },
+              icon: const Icon(Icons.history),
+              label: Text(t.changelogPage.title),
             ),
-            const SizedBox(height: 80),
+          ),
+          const SizedBox(height: 80),
+        ];
+        final sections = entries.whereType<_SettingsSection>().toList();
+        final general = sections.firstWhere((s) => s.title == t.settingsTab.general.title);
+        final receive = sections.firstWhere((s) => s.title == t.settingsTab.receive.title);
+        final network = sections.firstWhere((s) => s.title == t.settingsTab.network.title);
+        final other = sections.firstWhere((s) => s.title == t.settingsTab.other.title);
+        final appearanceLabels = {
+          t.settingsTab.general.brightness,
+          t.settingsTab.general.color,
+          t.settingsTab.general.language,
+          t.settingsTab.general.animations,
+        };
+        final deviceLabels = {t.settingsTab.network.alias, t.settingsTab.network.deviceType, t.settingsTab.network.deviceModel};
+        String? label(Widget w) => switch (w) {
+          _SettingsEntry(:final label) => label,
+          _BooleanEntry(:final label) => label,
+          _ButtonEntry(:final label) => label,
+          _ => null,
+        };
+        final categories = <String, (IconData, String, List<Widget>)>{
+          'Appearance': (
+            Icons.palette_outlined,
+            t.neardockUI.appearanceSubtitle,
+            [
+              for (final w in general.children)
+                if (appearanceLabels.contains(label(w))) w,
+            ],
+          ),
+          'Transfers': (
+            Icons.swap_vert,
+            t.neardockUI.transfersSubtitle,
+            [
+              ...receive.children.where((w) => label(w) != t.settingsTab.receive.requirePin),
+              ...sections.where((s) => s.title == t.settingsTab.send.title).expand((s) => s.children),
+            ],
+          ),
+          'Devices': (
+            Icons.devices_outlined,
+            t.neardockUI.devicesSubtitle,
+            [
+              for (final w in network.children)
+                if (deviceLabels.contains(label(w)) || (label(w)?.startsWith(t.settingsTab.network.server) ?? false) || w is AnimatedCrossFade) w,
+              const KnownDevicesPanel(),
+            ],
+          ),
+          'Chat & Clipboard': (Icons.chat_bubble_outline, t.neardockUI.textSettingsSubtitle, [const _TextSettings()]),
+          'Privacy': (
+            Icons.shield_outlined,
+            t.neardockUI.privacySubtitle,
+            [
+              ...receive.children.where((w) => label(w) == t.settingsTab.receive.requirePin),
+              ...network.children.where((w) => label(w) == t.settingsTab.network.encryption),
+              Padding(padding: const EdgeInsets.only(bottom: 20), child: Text(t.neardockUI.privacyHelp)),
+            ],
+          ),
+          'Advanced': (
+            Icons.tune,
+            t.neardockUI.advancedSubtitle,
+            [
+              entries.firstWhere((w) => w is Row),
+              ...general.children.where((w) => !appearanceLabels.contains(label(w))),
+              ...network.children.where(
+                (w) =>
+                    label(w) != null &&
+                    !deviceLabels.contains(label(w)) &&
+                    !(label(w)?.startsWith(t.settingsTab.network.server) ?? false) &&
+                    label(w) != t.settingsTab.network.encryption,
+              ),
+              ...network.children.whereType<Visibility>(),
+            ],
+          ),
+          'Updates': (Icons.system_update_outlined, t.neardockUI.updatesSubtitle, [const NeardockUpdateSettings()]),
+          'Logs': (Icons.receipt_long_outlined, t.neardockUI.logsSubtitle, [const DiagnosticsPanel()]),
+          'About & Licences': (
+            Icons.info_outline,
+            t.neardockUI.aboutSubtitle,
+            [
+              Center(child: Image.asset('assets/img/logo-128.png', width: 64, height: 64)),
+              ...other.children,
+              Center(child: Text('Neardock by Yaze Media', style: Theme.of(context).textTheme.titleMedium)),
+              ref
+                  .watch(versionProvider)
+                  .maybeWhen(
+                    data: (v) => Center(child: Text('Version ${v.combinedString}')),
+                    orElse: () => const SizedBox.shrink(),
+                  ),
+              Center(
+                child: TextButton(onPressed: () => context.push(() => const ChangelogPage()), child: Text(t.changelogPage.title)),
+              ),
+            ],
+          ),
+        };
+        return ResponsiveListView(
+          maxWidth: 840,
+          padding: const EdgeInsets.all(24),
+          tabletPadding: const EdgeInsets.all(32),
+          children: [
+            ScreenHeader(title: t.settingsTab.title, subtitle: t.neardockUI.settingsSubtitle),
+            TextField(
+              decoration: InputDecoration(hintText: t.neardockUI.searchSettings, prefixIcon: const Icon(Icons.search)),
+              onChanged: (value) => setState(() => _query = value.toLowerCase()),
+            ),
+            const SizedBox(height: 12),
+            for (final category in categories.entries)
+              if (_query.isEmpty ||
+                  _categoryLabel(category.key).toLowerCase().contains(_query) ||
+                  category.value.$2.toLowerCase().contains(_query) ||
+                  category.value.$3.any((w) => label(w)?.toLowerCase().contains(_query) ?? false))
+                Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ListTile(
+                        dense: true,
+                        minVerticalPadding: 12,
+                        leading: Icon(category.value.$1, size: 22),
+                        title: Text(_categoryLabel(category.key), style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(category.value.$2),
+                        trailing: Icon(_expanded.contains(category.key) || _query.isNotEmpty ? Icons.expand_less : Icons.expand_more),
+                        onTap: () => setState(() {
+                          if (!_expanded.remove(category.key)) _expanded.add(category.key);
+                        }),
+                      ),
+                      if (_expanded.contains(category.key) || _query.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: category.value.$3),
+                        ),
+                    ],
+                  ),
+                ),
           ],
         );
       },
@@ -618,7 +763,7 @@ class _SettingsEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Expanded(
@@ -772,3 +917,48 @@ extension on ColorMode {
     };
   }
 }
+
+class _TextSettings extends StatelessWidget {
+  const _TextSettings();
+  @override
+  Widget build(BuildContext context) {
+    context.watch(conversationProvider);
+    final store = context.ref.notifier(conversationProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(t.neardockUI.saveConversations),
+          subtitle: Text(t.neardockUI.saveConversationsHelp),
+          value: store.saveHistory,
+          onChanged: (enabled) async {
+            if (!enabled && !await confirmClearTextHistory(context)) return;
+            await store.setHistoryEnabled(enabled);
+          },
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () async {
+            if (await confirmClearTextHistory(context)) await store.clear();
+          },
+          icon: const Icon(Icons.delete_outline),
+          label: Text(t.neardockUI.clearAllConversations),
+        ),
+        Padding(padding: const EdgeInsets.symmetric(vertical: 20), child: Text(t.neardockUI.manualClipboardHelp)),
+      ],
+    );
+  }
+}
+
+String _categoryLabel(String value) => switch (value) {
+  'Updates' => t.neardockUI.updates,
+  'Logs' => t.neardockUI.logs,
+  'Appearance' => t.neardockUI.appearance,
+  'Transfers' => t.neardockUI.transfers,
+  'Devices' => t.neardockUI.devices,
+  'Chat & Clipboard' => t.neardockUI.chatClipboard,
+  'Privacy' => t.neardockUI.privacy,
+  'Advanced' => t.neardockUI.advanced,
+  _ => t.neardockUI.aboutLicences,
+};

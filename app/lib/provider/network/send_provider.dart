@@ -1,7 +1,9 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:localsend_app/model/cross_file.dart';
+import 'package:localsend_app/model/persistence/conversation_message.dart';
 import 'package:localsend_app/model/send_mode.dart';
 import 'package:localsend_app/model/state/send/send_session_state.dart';
 import 'package:localsend_app/model/state/send/sending_file.dart';
@@ -9,6 +11,7 @@ import 'package:localsend_app/pages/home_page.dart';
 import 'package:localsend_app/pages/home_page_controller.dart';
 import 'package:localsend_app/pages/progress_page.dart';
 import 'package:localsend_app/pages/send_page.dart';
+import 'package:localsend_app/provider/conversation_provider.dart';
 import 'package:localsend_app/provider/device_info_provider.dart';
 import 'package:localsend_app/provider/file_transfer_provider.dart';
 import 'package:localsend_app/provider/http_provider.dart';
@@ -51,6 +54,8 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
 
   /// Cancel tokens of the running checksum calculations.
   /// Session ID -> Cancel token
+  final _textSessions = <String, String>{};
+
   final _hashCancelTokens = <String, rust_cancel.RsCancellationToken>{};
 
   /// Cancel tokens of the running prepare-upload requests.
@@ -89,248 +94,301 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
     required Device target,
     required List<CrossFile> files,
     required bool background,
+    HomeTab? textReturnTab,
   }) async {
     // Pinned to the device the user picked, so the request is not sent at all
     // if someone else answers on that address.
     final client = ref.read(httpProvider).pinnedTo(target.fingerprint);
     final sessionId = _uuid.v4();
-    final createChecksums = ref.read(settingsProvider).createChecksums;
-
-    // The ids are assigned upfront, so the checksums calculated below
-    // can be mapped back to the corresponding file.
-    final selectedFiles = files.map((file) => (id: _uuid.v4(), file: file)).toList();
-
-    state = state.updateSession(
-      sessionId: sessionId,
-      state: (_) => SendSessionState(
-        sessionId: sessionId,
-        remoteSessionId: null,
-        background: background,
-        status: SessionStatus.waiting,
-        target: target,
-        files: {
-          for (final (:id, :file) in selectedFiles)
-            id: SendingFile(
-              file: FileDto(
-                id: id,
-                fileName: file.name,
-                size: file.size,
-                fileType: file.fileType,
-                hash: null,
-                // calculated below
-                preview: files.length == 1 && files.first.fileType == FileType.text && files.first.bytes != null
-                    ? utf8.decode(files.first.bytes!) // send simple message by embedding it into the preview
-                    : null,
-                metadata: file.lastModified != null || file.lastAccessed != null
-                    ? FileMetadata(
-                        lastModified: file.lastModified,
-                        lastAccessed: file.lastAccessed,
-                      )
-                    : null,
-              ),
-              token: null,
-              thumbnail: file.thumbnail,
-              asset: file.asset,
-              path: file.path,
-              bytes: file.bytes,
-              errorMessage: null,
+    if (textReturnTab != null && files.length == 1 && files.first.bytes != null && files.first.fileType == FileType.text) {
+      final messageId = 'send:$sessionId';
+      _textSessions[sessionId] = messageId;
+      ref
+          .notifier(conversationProvider)
+          .add(
+            ConversationMessage(
+              id: messageId,
+              peerFingerprint: target.fingerprint,
+              peerAlias: target.alias,
+              text: utf8.decode(files.first.bytes!),
+              outgoing: true,
+              timestamp: DateTime.now().toUtc(),
+              status: 'waiting',
             ),
-        },
-        // Skipping the checksums marks all files as hashed, so the UI does not
-        // show the checksum progress.
-        hashedFileCount: createChecksums ? 0 : selectedFiles.length,
-        startTime: null,
-        endTime: null,
-        sendingTasks: [],
-        errorMessage: null,
-      ),
-    );
-
-    ref
-        .notifier(fileTransferProvider)
-        .setStatuses(
-          sessionId: sessionId,
-          statuses: {for (final f in selectedFiles) f.id: FileStatus.queue},
-        );
-
-    if (!background) {
-      // ignore: use_build_context_synchronously, unawaited_futures
-      Routerino.context.push(
-        () => SendPage(showAppBar: false, closeSessionOnClose: true, sessionId: sessionId),
-        transition: RouterinoTransition.fade(),
-      );
+          );
     }
+    try {
+      final createChecksums = ref.read(settingsProvider).createChecksums;
 
-    // Calculate the checksums which are part of the request.
-    // The files are read and hashed in Rust, one file after another.
-    final hashes = <String, String>{};
-    if (createChecksums) {
-      final hashCancelToken = rust_cancel.createCancellationToken();
-      _hashCancelTokens[sessionId] = hashCancelToken;
+      // The ids are assigned upfront, so the checksums calculated below
+      // can be mapped back to the corresponding file.
+      final selectedFiles = files.map((file) => (id: _uuid.v4(), file: file)).toList();
+
+      state = state.updateSession(
+        sessionId: sessionId,
+        state: (_) => SendSessionState(
+          sessionId: sessionId,
+          remoteSessionId: null,
+          background: background,
+          status: SessionStatus.waiting,
+          target: target,
+          files: {
+            for (final (:id, :file) in selectedFiles)
+              id: SendingFile(
+                file: FileDto(
+                  id: id,
+                  fileName: file.name,
+                  size: file.size,
+                  fileType: file.fileType,
+                  hash: null,
+                  // calculated below
+                  preview: files.length == 1 && files.first.fileType == FileType.text && files.first.bytes != null
+                      ? utf8.decode(files.first.bytes!) // send simple message by embedding it into the preview
+                      : null,
+                  metadata: file.lastModified != null || file.lastAccessed != null
+                      ? FileMetadata(
+                          lastModified: file.lastModified,
+                          lastAccessed: file.lastAccessed,
+                        )
+                      : null,
+                ),
+                token: null,
+                thumbnail: file.thumbnail,
+                asset: file.asset,
+                path: file.path,
+                bytes: file.bytes,
+                errorMessage: null,
+              ),
+          },
+          // Skipping the checksums marks all files as hashed, so the UI does not
+          // show the checksum progress.
+          hashedFileCount: createChecksums ? 0 : selectedFiles.length,
+          startTime: null,
+          endTime: null,
+          sendingTasks: [],
+          errorMessage: null,
+        ),
+      );
+
+      ref
+          .notifier(fileTransferProvider)
+          .setStatuses(
+            sessionId: sessionId,
+            statuses: {for (final f in selectedFiles) f.id: FileStatus.queue},
+          );
+
+      if (!background) {
+        // ignore: use_build_context_synchronously, unawaited_futures
+        Routerino.context.push(
+          () => SendPage(showAppBar: false, closeSessionOnClose: true, sessionId: sessionId),
+          transition: RouterinoTransition.fade(),
+        );
+      }
+
+      // Calculate the checksums which are part of the request.
+      // The files are read and hashed in Rust, one file after another.
+      final hashes = <String, String>{};
+      if (createChecksums) {
+        final hashCancelToken = rust_cancel.createCancellationToken();
+        _hashCancelTokens[sessionId] = hashCancelToken;
+        try {
+          for (final (:id, :file) in selectedFiles) {
+            try {
+              hashes[id] = await calculateFileHash(
+                path: file.path,
+                bytes: file.bytes,
+                cancelToken: hashCancelToken,
+                onProgress: (bytes) {
+                  if (state[sessionId] == null) {
+                    // session has been canceled while calculating the checksums
+                    return;
+                  }
+                  ref
+                      .notifier(fileTransferProvider)
+                      .setProgress(
+                        sessionId: sessionId,
+                        fileId: id,
+                        progress: file.size == 0 ? 1 : (bytes / file.size).clamp(0, 1),
+                      );
+                },
+              );
+            } catch (e) {
+              if (state[sessionId] != null) {
+                // Sending the checksum is optional, so a file that cannot be read
+                // here still gets a chance to be sent.
+                // Errors caused by the cancellation are not logged.
+                _logger.warning('Could not calculate the checksum of ${file.name}', e);
+              }
+            }
+
+            if (state[sessionId] == null) {
+              // session has been canceled while calculating the checksums
+              return;
+            }
+
+            // Also set for files whose hashing failed, so the progress bar stays
+            // consistent with the files that are left.
+            ref.notifier(fileTransferProvider).setProgress(sessionId: sessionId, fileId: id, progress: 1);
+            state = state.updateSession(
+              sessionId: sessionId,
+              state: (s) => s?.copyWith(hashedFileCount: s.hashedFileCount + 1),
+            );
+          }
+        } finally {
+          _hashCancelTokens.remove(sessionId);
+        }
+      }
+
+      final hashedState = state[sessionId];
+      if (hashedState == null) {
+        // session has been canceled while calculating the checksums
+        return;
+      }
+
+      final requestState = hashedState.copyWith(
+        files: hashedState.files.map(
+          (id, sendingFile) => MapEntry(id, sendingFile.copyWith(file: sendingFile.file.withHash(hashes[id]))),
+        ),
+      );
+      state = state.updateSession(
+        sessionId: sessionId,
+        state: (_) => requestState,
+      );
+
+      final originDevice = ref.read(deviceFullInfoProvider);
+      final requestDto = rust_model.PrepareUploadRequestDto(
+        info: rust_model.RegisterDto(
+          alias: originDevice.alias,
+          version: originDevice.version,
+          deviceModel: originDevice.deviceModel,
+          deviceType: originDevice.deviceType.toRust(),
+          token: originDevice.fingerprint,
+          port: originDevice.port,
+          protocol: originDevice.https ? rust_model.ProtocolType.https : rust_model.ProtocolType.http,
+          hasWebInterface: originDevice.download,
+        ),
+        files: {
+          for (final entry in requestState.files.entries) entry.key: entry.value.file.toRust(),
+        },
+      );
+
+      rust_http.PrepareUploadResult? response;
+      bool invalidPin;
+      bool pinFirstAttempt = true;
+      String? pin;
+      final prepareUploadCancelToken = rust_cancel.createCancellationToken();
+      _prepareUploadCancelTokens[sessionId] = prepareUploadCancelToken;
       try {
-        for (final (:id, :file) in selectedFiles) {
+        do {
+          invalidPin = false;
           try {
-            hashes[id] = await calculateFileHash(
-              path: file.path,
-              bytes: file.bytes,
-              cancelToken: hashCancelToken,
-              onProgress: (bytes) {
-                if (state[sessionId] == null) {
-                  // session has been canceled while calculating the checksums
+            response = await client.prepareUpload(
+              protocol: target.getProtocolType(),
+              ip: target.ip!,
+              port: target.port,
+              payload: requestDto,
+              // The peer is already verified during the TLS handshake by the
+              // fingerprint the client is pinned to.
+              publicKey: null,
+              pin: pin,
+              cancelToken: prepareUploadCancelToken,
+            );
+          } on rust_http.RsHttpClientError_StatusCode catch (e) {
+            switch (e.status) {
+              case 401:
+                invalidPin = true;
+
+                // wait until animation is finished
+                await sleepAsync(500);
+
+                pin = await showDialog<String>(
+                  context: Routerino.context, // ignore: use_build_context_synchronously
+                  builder: (_) => PinDialog(
+                    obscureText: true,
+                    showInvalidPin: !pinFirstAttempt,
+                  ),
+                );
+
+                pinFirstAttempt = false;
+
+                if (pin == null) {
+                  state = state.updateSession(
+                    sessionId: sessionId,
+                    state: (s) => s?.copyWith(
+                      status: SessionStatus.canceledBySender,
+                    ),
+                  );
                   return;
                 }
-                ref
-                    .notifier(fileTransferProvider)
-                    .setProgress(
-                      sessionId: sessionId,
-                      fileId: id,
-                      progress: file.size == 0 ? 1 : (bytes / file.size).clamp(0, 1),
-                    );
-              },
-            );
-          } catch (e) {
-            if (state[sessionId] != null) {
-              // Sending the checksum is optional, so a file that cannot be read
-              // here still gets a chance to be sent.
-              // Errors caused by the cancellation are not logged.
-              _logger.warning('Could not calculate the checksum of ${file.name}', e);
-            }
-          }
-
-          if (state[sessionId] == null) {
-            // session has been canceled while calculating the checksums
-            return;
-          }
-
-          // Also set for files whose hashing failed, so the progress bar stays
-          // consistent with the files that are left.
-          ref.notifier(fileTransferProvider).setProgress(sessionId: sessionId, fileId: id, progress: 1);
-          state = state.updateSession(
-            sessionId: sessionId,
-            state: (s) => s?.copyWith(hashedFileCount: s.hashedFileCount + 1),
-          );
-        }
-      } finally {
-        _hashCancelTokens.remove(sessionId);
-      }
-    }
-
-    final hashedState = state[sessionId];
-    if (hashedState == null) {
-      // session has been canceled while calculating the checksums
-      return;
-    }
-
-    final requestState = hashedState.copyWith(
-      files: hashedState.files.map(
-        (id, sendingFile) => MapEntry(id, sendingFile.copyWith(file: sendingFile.file.withHash(hashes[id]))),
-      ),
-    );
-    state = state.updateSession(
-      sessionId: sessionId,
-      state: (_) => requestState,
-    );
-
-    final originDevice = ref.read(deviceFullInfoProvider);
-    final requestDto = rust_model.PrepareUploadRequestDto(
-      info: rust_model.RegisterDto(
-        alias: originDevice.alias,
-        version: originDevice.version,
-        deviceModel: originDevice.deviceModel,
-        deviceType: originDevice.deviceType.toRust(),
-        token: originDevice.fingerprint,
-        port: originDevice.port,
-        protocol: originDevice.https ? rust_model.ProtocolType.https : rust_model.ProtocolType.http,
-        hasWebInterface: originDevice.download,
-      ),
-      files: {
-        for (final entry in requestState.files.entries) entry.key: entry.value.file.toRust(),
-      },
-    );
-
-    rust_http.PrepareUploadResult? response;
-    bool invalidPin;
-    bool pinFirstAttempt = true;
-    String? pin;
-    final prepareUploadCancelToken = rust_cancel.createCancellationToken();
-    _prepareUploadCancelTokens[sessionId] = prepareUploadCancelToken;
-    try {
-      do {
-        invalidPin = false;
-        try {
-          response = await client.prepareUpload(
-            protocol: target.getProtocolType(),
-            ip: target.ip!,
-            port: target.port,
-            payload: requestDto,
-            // The peer is already verified during the TLS handshake by the
-            // fingerprint the client is pinned to.
-            publicKey: null,
-            pin: pin,
-            cancelToken: prepareUploadCancelToken,
-          );
-        } on rust_http.RsHttpClientError_StatusCode catch (e) {
-          switch (e.status) {
-            case 401:
-              invalidPin = true;
-
-              // wait until animation is finished
-              await sleepAsync(500);
-
-              pin = await showDialog<String>(
-                context: Routerino.context, // ignore: use_build_context_synchronously
-                builder: (_) => PinDialog(
-                  obscureText: true,
-                  showInvalidPin: !pinFirstAttempt,
-                ),
-              );
-
-              pinFirstAttempt = false;
-
-              if (pin == null) {
+                break;
+              case 403:
                 state = state.updateSession(
                   sessionId: sessionId,
                   state: (s) => s?.copyWith(
-                    status: SessionStatus.canceledBySender,
+                    status: SessionStatus.declined,
                   ),
                 );
                 return;
-              }
-              break;
-            case 403:
-              state = state.updateSession(
-                sessionId: sessionId,
-                state: (s) => s?.copyWith(
-                  status: SessionStatus.declined,
-                ),
-              );
-              return;
-            case 409:
-              state = state.updateSession(
-                sessionId: sessionId,
-                state: (s) => s?.copyWith(
-                  status: SessionStatus.recipientBusy,
-                ),
-              );
-              return;
-            case 429:
-              state = state.updateSession(
-                sessionId: sessionId,
-                state: (s) => s?.copyWith(
-                  status: SessionStatus.tooManyAttempts,
-                ),
-              );
-              return;
-            default:
-              state = state.updateSession(
-                sessionId: sessionId,
-                state: (s) => s?.copyWith(
-                  status: SessionStatus.finishedWithErrors,
-                  errorMessage: e.humanErrorMessage,
-                ),
-              );
-              return;
+              case 409:
+                state = state.updateSession(
+                  sessionId: sessionId,
+                  state: (s) => s?.copyWith(
+                    status: SessionStatus.recipientBusy,
+                  ),
+                );
+                return;
+              case 429:
+                state = state.updateSession(
+                  sessionId: sessionId,
+                  state: (s) => s?.copyWith(
+                    status: SessionStatus.tooManyAttempts,
+                  ),
+                );
+                return;
+              default:
+                state = state.updateSession(
+                  sessionId: sessionId,
+                  state: (s) => s?.copyWith(
+                    status: SessionStatus.finishedWithErrors,
+                    errorMessage: e.humanErrorMessage,
+                  ),
+                );
+                return;
+            }
+          } catch (e) {
+            state = state.updateSession(
+              sessionId: sessionId,
+              state: (s) => s?.copyWith(
+                status: SessionStatus.finishedWithErrors,
+                errorMessage: e.humanErrorMessage,
+              ),
+            );
+            return;
           }
+        } while (invalidPin);
+      } finally {
+        _prepareUploadCancelTokens.remove(sessionId);
+      }
+
+      if (response == null) {
+        return;
+      }
+
+      final Map<String, String> fileMap;
+      if (response.statusCode == 204) {
+        // Nothing selected
+        // Interpret this as "Read and close"
+        fileMap = {};
+      } else {
+        try {
+          fileMap = response.response!.files;
+          final remoteSessionId = response.response!.sessionId;
+          state = state.updateSession(
+            sessionId: sessionId,
+            state: (s) => s?.copyWith(
+              remoteSessionId: remoteSessionId,
+            ),
+          );
         } catch (e) {
           state = state.updateSession(
             sessionId: sessionId,
@@ -341,116 +399,89 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
           );
           return;
         }
-      } while (invalidPin);
-    } finally {
-      _prepareUploadCancelTokens.remove(sessionId);
-    }
+      }
 
-    if (response == null) {
-      return;
-    }
-
-    final Map<String, String> fileMap;
-    if (response.statusCode == 204) {
-      // Nothing selected
-      // Interpret this as "Read and close"
-      fileMap = {};
-    } else {
-      try {
-        fileMap = response.response!.files;
-        final remoteSessionId = response.response!.sessionId;
+      if (fileMap.isEmpty) {
+        // receiver has nothing selected
         state = state.updateSession(
           sessionId: sessionId,
           state: (s) => s?.copyWith(
-            remoteSessionId: remoteSessionId,
+            status: SessionStatus.finished,
           ),
         );
-      } catch (e) {
-        state = state.updateSession(
-          sessionId: sessionId,
-          state: (s) => s?.copyWith(
-            status: SessionStatus.finishedWithErrors,
-            errorMessage: e.humanErrorMessage,
-          ),
-        );
+
+        if (state[sessionId]?.background == false) {
+          // Pop back to the existing HomePage instead of pushing a new one:
+          // a second HomePage attaches a second PageView to the shared PageController,
+          // and removing routes without animation orphans a hero in flight.
+          ref.redux(homePageControllerProvider).dispatch(ChangeTabAction(textReturnTab ?? HomeTab.send));
+          ref.global.dispatch(NavigateAction.popUntilRoot());
+        }
+
+        closeSession(sessionId);
         return;
       }
-    }
 
-    if (fileMap.isEmpty) {
-      // receiver has nothing selected
-      state = state.updateSession(
+      final sendingFiles = {
+        for (final file in requestState.files.values)
+          file.file.id: fileMap.containsKey(file.file.id) ? file.copyWith(token: fileMap[file.file.id]) : file,
+      };
+
+      // Recreate the transfer state: the hash progress is no longer needed and must not be
+      // mistaken for upload progress, which starts at zero for every file.
+      final transferNotifier = ref.notifier(fileTransferProvider);
+      transferNotifier.removeSession(sessionId);
+      transferNotifier.setStatuses(
         sessionId: sessionId,
-        state: (s) => s?.copyWith(
-          status: SessionStatus.finished,
-        ),
+        statuses: {for (final file in sendingFiles.values) file.file.id: file.token != null ? FileStatus.queue : FileStatus.skipped},
       );
 
       if (state[sessionId]?.background == false) {
-        // Pop back to the existing HomePage instead of pushing a new one:
-        // a second HomePage attaches a second PageView to the shared PageController,
-        // and removing routes without animation orphans a hero in flight.
-        ref.redux(homePageControllerProvider).dispatch(ChangeTabAction(HomeTab.send));
-        ref.global.dispatch(NavigateAction.popUntilRoot());
+        final background = ref.read(settingsProvider).sendMode == SendMode.multiple;
+
+        unawaited(
+          // ignore: use_build_context_synchronously
+          Routerino.context
+              .pushAndRemoveUntil(
+                removeUntil: HomePage,
+                transition: RouterinoTransition.fade(),
+                // immediately is not possible: https://github.com/flutter/flutter/issues/121910
+                builder: () => ProgressPage(
+                  showAppBar: background,
+                  closeSessionOnClose: !background,
+                  sessionId: sessionId,
+                ),
+              )
+              .then((_) {
+                if (background) {
+                  // The page was popped (e.g. backing out mid-transfer), so the session
+                  // runs in background again and is removed silently on success.
+                  setBackground(sessionId, true);
+                }
+              }),
+        );
       }
 
-      closeSession(sessionId);
-      return;
-    }
-
-    final sendingFiles = {
-      for (final file in requestState.files.values)
-        file.file.id: fileMap.containsKey(file.file.id) ? file.copyWith(token: fileMap[file.file.id]) : file,
-    };
-
-    // Recreate the transfer state: the hash progress is no longer needed and must not be
-    // mistaken for upload progress, which starts at zero for every file.
-    final transferNotifier = ref.notifier(fileTransferProvider);
-    transferNotifier.removeSession(sessionId);
-    transferNotifier.setStatuses(
-      sessionId: sessionId,
-      statuses: {for (final file in sendingFiles.values) file.file.id: file.token != null ? FileStatus.queue : FileStatus.skipped},
-    );
-
-    if (state[sessionId]?.background == false) {
-      final background = ref.read(settingsProvider).sendMode == SendMode.multiple;
-
-      unawaited(
-        // ignore: use_build_context_synchronously
-        Routerino.context
-            .pushAndRemoveUntil(
-              removeUntil: HomePage,
-              transition: RouterinoTransition.fade(),
-              // immediately is not possible: https://github.com/flutter/flutter/issues/121910
-              builder: () => ProgressPage(
-                showAppBar: background,
-                closeSessionOnClose: !background,
-                sessionId: sessionId,
-              ),
-            )
-            .then((_) {
-              if (background) {
-                // The page was popped (e.g. backing out mid-transfer), so the session
-                // runs in background again and is removed silently on success.
-                setBackground(sessionId, true);
-              }
-            }),
+      state = state.updateSession(
+        sessionId: sessionId,
+        state: (s) => s?.copyWith(
+          status: SessionStatus.sending,
+          files: sendingFiles,
+        ),
       );
+
+      // Keep the process alive for the whole transfer. Started here, while the app is still in the
+      // foreground, because Android 12+ rejects starting a foreground service from the background.
+      TransferNotification.start(sessionId: sessionId, receiving: false);
+
+      await _sendLoop(sessionId, sendingFiles);
+    } finally {
+      final messageId = _textSessions[sessionId];
+      final status = state[sessionId]?.status;
+      if (messageId != null && status != null) {
+        ref.notifier(conversationProvider).updateStatus(messageId, status.name);
+      }
     }
-
-    state = state.updateSession(
-      sessionId: sessionId,
-      state: (s) => s?.copyWith(
-        status: SessionStatus.sending,
-        files: sendingFiles,
-      ),
-    );
-
-    // Keep the process alive for the whole transfer. Started here, while the app is still in the
-    // foreground, because Android 12+ rejects starting a foreground service from the background.
-    TransferNotification.start(sessionId: sessionId, receiving: false);
-
-    await _sendLoop(sessionId, sendingFiles);
   }
 
   /// Reports the total session progress to the foreground service notification,
@@ -780,17 +811,28 @@ class SendNotifier extends Notifier<Map<String, SendSessionState>> {
     if (sessionState == null) {
       return;
     }
+    final messageId = _textSessions.remove(sessionId);
+    if (messageId != null) {
+      final status = sessionState.status == SessionStatus.waiting || sessionState.status == SessionStatus.sending
+          ? SessionStatus.canceledBySender.name
+          : sessionState.status.name;
+      ref.notifier(conversationProvider).updateStatus(messageId, status);
+    }
     TransferNotification.stop(sessionId);
     _hashCancelTokens.remove(sessionId)?.cancel();
     _prepareUploadCancelTokens.remove(sessionId)?.cancel();
     state = state.removeSession(ref, sessionId);
-    if (sessionState.status == SessionStatus.finished && ref.read(settingsProvider).sendMode == SendMode.single) {
+    if (messageId == null && sessionState.status == SessionStatus.finished && ref.read(settingsProvider).sendMode == SendMode.single) {
       // clear selected files
       ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction());
     }
   }
 
   void clearAllSessions() {
+    for (final entry in _textSessions.entries) {
+      ref.notifier(conversationProvider).updateStatus(entry.value, 'canceledBySender');
+    }
+    _textSessions.clear();
     for (final sessionId in state.keys) {
       TransferNotification.stop(sessionId);
     }

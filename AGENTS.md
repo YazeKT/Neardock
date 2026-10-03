@@ -1,5 +1,16 @@
 # AGENTS.md
 
+## Neardock fork
+
+This fork is maintained by Yaze Media (GitHub: YazeKT). The owner has authorised AI-assisted implementation
+of the Neardock rebrand, Windows/Android packaging, website, and documentation.
+The upstream contribution policy below applies to contributions submitted to LocalSend.
+Neardock supports Windows and Android only. Preserve the shared transfer protocol,
+encryption, discovery, and storage schema. Brand changes may isolate application IDs
+and storage locations. Preserve upstream copyright and licence notices.
+Run `python support/neardock/check_release.py` with the existing Flutter/Rust checks.
+The CLI and other platform sources are retained for history, not release targets.
+
 LocalSend disallows AI generated contributions unless:
 
 - they are bug fixes or

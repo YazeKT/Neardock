@@ -1,10 +1,10 @@
 name: localsend_app
-description: An open source cross-platform alternative to AirDrop
-homepage: https://localsend.org/
+description: Share files between nearby Windows and Android devices
+homepage: https://yazekt.github.io/Neardock/
 publish_to: "none"
 resolution: workspace
 
-version: 1.18.2+64
+version: 1.0.0+1
 
 environment:
   flutter: ^3.41.0
@@ -78,6 +78,8 @@ dev_dependencies:
   dart_mappable_builder: 4.8.0
   flutter_gen_runner: 5.15.0
   flutter_lints: 6.0.0
+  flutter_test:
+    sdk: flutter
   freezed: 3.2.5
   mockito: any
   refena_inspector: 2.1.1

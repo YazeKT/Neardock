@@ -1,11 +1,13 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+
 import 'package:flutter/services.dart';
 import 'package:localsend_app/config/theme.dart';
 import 'package:localsend_app/gen/strings.g.dart';
 import 'package:localsend_app/model/persistence/color_mode.dart';
 import 'package:localsend_app/pages/receive_options_page.dart';
+import 'package:localsend_app/pages/tabs/text_tab.dart';
 import 'package:localsend_app/pages/verify_page.dart';
 import 'package:localsend_app/pages/web_share_page.dart';
 import 'package:localsend_app/provider/favorites_provider.dart';
@@ -17,7 +19,6 @@ import 'package:localsend_app/util/native/platform_check.dart';
 import 'package:localsend_app/util/native/taskbar_helper.dart';
 import 'package:localsend_app/util/ui/snackbar.dart';
 import 'package:localsend_app/widget/device_bage.dart';
-import 'package:localsend_app/widget/responsive_list_view.dart';
 import 'package:localsend_isolates/model/device.dart';
 import 'package:localsend_isolates/model/dto/file_dto.dart';
 import 'package:localsend_isolates/model/session_status.dart';
@@ -88,6 +89,34 @@ class _ReceivePageState extends State<ReceivePage> with Refena {
         unawaited(TaskbarHelper.clearProgressBar());
       },
       builder: (context, vm) {
+        if (vm.message != null && vm.sender.fingerprint.isNotEmpty) {
+          return PopScope(
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) vm.onDecline();
+            },
+            child: Scaffold(
+              appBar: AppBar(title: Text(t.neardockUI.chat)),
+              body: TextTab(clipboard: false, requestPeer: vm.sender),
+              bottomNavigationBar: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (vm.isLink)
+                        TextButton.icon(
+                          onPressed: () => launchUrl(Uri.parse(vm.message!), mode: LaunchMode.externalApplication),
+                          icon: const Icon(Icons.open_in_new),
+                          label: Text(t.receivePage.subTitleLink),
+                        ),
+                      _Actions(vm),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
         return PopScope(
           onPopInvokedWithResult: (didPop, result) {
             if (didPop) {
@@ -99,7 +128,7 @@ class _ReceivePageState extends State<ReceivePage> with Refena {
             body: SafeArea(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: ResponsiveListView.defaultMaxWidth),
+                  constraints: const BoxConstraints(maxWidth: 760),
                   child: Builder(
                     builder: (context) {
                       final height = MediaQuery.of(context).size.height;

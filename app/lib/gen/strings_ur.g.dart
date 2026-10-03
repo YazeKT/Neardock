@@ -40,7 +40,7 @@ class TranslationsUr extends Translations with BaseTranslations<AppLocale, Trans
 
   // Translations
   @override
-  String get appName => 'LocalSend';
+  String get appName => 'Neardock';
   @override
   late final _Translations$general$ur general = _Translations$general$ur._(_root);
   @override
@@ -493,7 +493,7 @@ class _Translations$webSharePage$ur extends Translations$webSharePage$en {
   @override
   String pinHint({required Object pin}) => 'PIN ہے "${pin}"';
   @override
-  String get encryptionHint => 'LocalSend براؤزر میں استعمال کرنے کیلئے آپ کوخود سائن کردہ سرٹیفکیٹ قبول کرنا ہوگا۔';
+  String get encryptionHint => 'Neardock براؤزر میں استعمال کرنے کیلئے آپ کوخود سائن کردہ سرٹیفکیٹ قبول کرنا ہوگا۔';
   @override
   String pendingRequests({required Object n}) => 'زیر التواء درخواستیں: ${n}';
 }
@@ -517,10 +517,10 @@ class _Translations$aboutPage$ur extends Translations$aboutPage$en {
 
   // Translations
   @override
-  String get title => 'کے بارے میں LocalSend';
+  String get title => 'کے بارے میں Neardock';
   @override
   List<String> get description => [
-    'LocalSend ایک مفت، اوپن سورس ایپ ہے جو آپ کو انٹرنیٹ کنکشن کی ضرورت کے بغیر اپنے مقامی نیٹ ورک کے ذریعے قریبی آلات کے ساتھ فائلیں اور پیغامات محفوظ طریقے سے شیئر کرنے کی اجازت دیتی ہے۔',
+    'Neardock ایک مفت، اوپن سورس ایپ ہے جو آپ کو انٹرنیٹ کنکشن کی ضرورت کے بغیر اپنے مقامی نیٹ ورک کے ذریعے قریبی آلات کے ساتھ فائلیں اور پیغامات محفوظ طریقے سے شیئر کرنے کی اجازت دیتی ہے۔',
     'یہ ایپ اینڈرائیڈ، iOS، macOS، ونڈوز، اور لینکس پر دستیاب ہے۔ آپ تمام ڈاؤن لوڈ کے اختیارات سرکاری ویب سائٹ پر تلاش کر سکتے ہیں۔',
   ];
   @override
@@ -660,7 +660,7 @@ class _Translations$tray$ur extends Translations$tray$en {
   @override
   String get open => _root.general.open;
   @override
-  String get close => 'چھوڑو LocalSend';
+  String get close => 'چھوڑو Neardock';
   @override
   String get closeWindows => 'بند کریں';
 }
@@ -871,7 +871,7 @@ class _Translations$settingsTab$general$ur extends Translations$settingsTab$gene
   @override
   String get launchMinimized => 'آٹو سٹارٹ: سٹارٹ پوشیدہ';
   @override
-  String get showInContextMenu => 'سیاق و سباق کے مینو میں LocalSend دکھائیں';
+  String get showInContextMenu => 'سیاق و سباق کے مینو میں Neardock دکھائیں';
   @override
   String get animations => 'تحریکات';
 }
@@ -1325,7 +1325,7 @@ class _Translations$dialogs$localNetworkUnauthorized$ur extends Translations$dia
   String get title => _root.dialogs.noPermission.title;
   @override
   String get description =>
-      'لوکل نیٹ ورک کا سکین کرنے کی اجازت کے بغیر LocalSend، دیگر ڈیوائسز تلاش نہیں کرسکتا ہے۔ براہ کرم ترتیبات میں اس اجازت کو منظور کریں۔';
+      'لوکل نیٹ ورک کا سکین کرنے کی اجازت کے بغیر Neardock، دیگر ڈیوائسز تلاش نہیں کرسکتا ہے۔ براہ کرم ترتیبات میں اس اجازت کو منظور کریں۔';
   @override
   String get gotoSettings => 'ترتیبات';
 }
@@ -1467,7 +1467,7 @@ class _Translations$dialogs$sendModeHelp$ur extends Translations$dialogs$sendMod
   @override
   String get multiple => 'اکثر متعدد ریسیورز کو فائل بھیجتا ہے۔ سلیکشن ختم نہیں ہوگا۔';
   @override
-  String get link => 'LocalSend نصب نہیں ہونے والے رسیورز منتخب شدہ فائلز کو لنک اپنے براؤزر میں کھولنے سے ڈاؤن لوڈ کر سکتے ہیں۔';
+  String get link => 'Neardock نصب نہیں ہونے والے رسیورز منتخب شدہ فائلز کو لنک اپنے براؤزر میں کھولنے سے ڈاؤن لوڈ کر سکتے ہیں۔';
 }
 
 // Path: dialogs.zoom

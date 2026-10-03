@@ -1,5 +1,5 @@
 {
-  "appName": "LocalSend",
+  "appName": "Neardock",
   "general": {
     "accept": "Aceitar",
     "accepted": "Aceito",
@@ -109,7 +109,7 @@
       "minimizeToTray": "Minimizar para a área de notificação ao fechar",
       "launchAtStartup": "Abrir automaticamente após iniciar sessão",
       "launchMinimized": "Início automático: Abrir minimizado",
-      "showInContextMenu": "Mostrar LocalSend no menu de contexto",
+      "showInContextMenu": "Mostrar Neardock no menu de contexto",
       "animations": "Animações"
     },
     "receive": {
@@ -180,7 +180,7 @@
   },
   "networkInterfacesPage": {
     "title": "Interfaces de rede",
-    "info": "Por padrão, o LocalSend utiliza todas as interfaces de rede disponíveis. Pode excluir as redes indesejadas aqui. É necessário reiniciar o servidor para aplicar as alterações.",
+    "info": "Por padrão, o Neardock utiliza todas as interfaces de rede disponíveis. Pode excluir as redes indesejadas aqui. É necessário reiniciar o servidor para aplicar as alterações.",
     "preview": "Anterior",
     "whitelist": "Lista branca",
     "blacklist": "Lista negra"
@@ -241,7 +241,7 @@
   "receiveOptionsPage": {
     "title": "Opções",
     "destination": "@:settingsTab.receive.destination",
-    "appDirectory": "(pasta LocalSend)",
+    "appDirectory": "(pasta Neardock)",
     "saveToGallery": "@:settingsTab.receive.saveToGallery",
     "saveToGalleryOff": "Opção desligada automaticamente pois uma pasta está a ser transferida."
   },
@@ -293,16 +293,16 @@
     "autoAccept": "Aceitar pedidos automaticamente",
     "requirePin": "Solicitar PIN",
     "pinHint": "O PIN é \"{pin}\"",
-    "encryptionHint": "O LocalSend utiliza um certificado assinado automaticamente. Precisa de aceitá-lo no navegador.",
+    "encryptionHint": "O Neardock utiliza um certificado assinado automaticamente. Precisa de aceitá-lo no navegador.",
     "pendingRequests": "Pedidos pendentes: {n}"
   },
   "webReceivePage": {
     "title": "Receber via ligação"
   },
   "aboutPage": {
-    "title": "Acerca do LocalSend",
+    "title": "Acerca do Neardock",
     "description": [
-      "O LocalSend é uma aplicação gratuita e de código aberto que permite partilhar ficheiros e mensagens de forma segura com dispositivos próximos através da sua rede local, sem a necessidade de uma ligação à Internet.",
+      "O Neardock é uma aplicação gratuita e de código aberto que permite partilhar ficheiros e mensagens de forma segura com dispositivos próximos através da sua rede local, sem a necessidade de uma ligação à Internet.",
       "Esta aplicação está disponível para Android, iOS, macOS, Windows e Linux. Pode encontrar todas as opções para descarregar na página oficial."
     ],
     "author": "Autor",
@@ -471,7 +471,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "O LocalSend não consegue encontrar outros dispositivos sem ter a permissão para analisar a rede local. Conceda esta permissão nas definições.",
+      "description": "O Neardock não consegue encontrar outros dispositivos sem ter a permissão para analisar a rede local. Conceda esta permissão nas definições.",
       "gotoSettings": "Definições"
     },
     "messageInput": {
@@ -518,7 +518,7 @@
       "title": "Modos de envio",
       "single": "Envia ficheiros para um destinatário. A seleção será apagada após a conclusão da transferência dos ficheiros.",
       "multiple": "Envia ficheiros para vários destinatários. A seleção não será apagada.",
-      "link": "Os destinatários que não têm o LocalSend instalado podem descarregar os ficheiros selecionados abrindo o link fornecido no navegador."
+      "link": "Os destinatários que não têm o Neardock instalado podem descarregar os ficheiros selecionados abrindo o link fornecido no navegador."
     },
     "zoom": {
       "title": "URL"
@@ -531,7 +531,7 @@
   "tray": {
     "@info": "Apple Guidelines are very strict about the 'close' wording.",
     "open": "@:general.open",
-    "close": "Fechar o LocalSend",
+    "close": "Fechar o Neardock",
     "closeWindows": "Sair"
   },
   "web": {

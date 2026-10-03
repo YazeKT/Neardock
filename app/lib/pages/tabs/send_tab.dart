@@ -1,3 +1,4 @@
+// Modified for Neardock by Yaze Media, 2026. Upstream notices and Apache 2.0 licence retained.
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:localsend_app/config/theme.dart';
@@ -17,17 +18,13 @@ import 'package:localsend_app/provider/settings_provider.dart';
 import 'package:localsend_app/util/favorites.dart';
 import 'package:localsend_app/util/native/file_picker.dart';
 import 'package:localsend_app/util/native/platform_check.dart';
-import 'package:localsend_app/widget/big_button.dart';
 import 'package:localsend_app/widget/custom_icon_button.dart';
 import 'package:localsend_app/widget/dialogs/add_file_dialog.dart';
 import 'package:localsend_app/widget/dialogs/send_mode_help_dialog.dart';
 import 'package:localsend_app/widget/file_thumbnail.dart';
 import 'package:localsend_app/widget/list_tile/device_list_tile.dart';
-import 'package:localsend_app/widget/list_tile/device_placeholder_list_tile.dart';
-import 'package:localsend_app/widget/opacity_slideshow.dart';
-import 'package:localsend_app/widget/responsive_builder.dart';
+import 'package:localsend_app/widget/neardock/screen_header.dart';
 import 'package:localsend_app/widget/responsive_list_view.dart';
-import 'package:localsend_app/widget/responsive_wrap_view.dart';
 import 'package:localsend_app/widget/rotating_widget.dart';
 import 'package:localsend_isolates/model/device.dart';
 import 'package:localsend_isolates/model/session_status.dart';
@@ -35,242 +32,132 @@ import 'package:localsend_isolates/util/file_size_helper.dart';
 import 'package:refena_flutter/refena_flutter.dart';
 import 'package:routerino/routerino.dart';
 
-const _horizontalPadding = 15.0;
 final pickerOptions = FilePickerOption.getOptionsForPlatform();
 
-class SendTab extends StatelessWidget {
+class SendTab extends StatefulWidget {
   const SendTab();
+  @override
+  State<SendTab> createState() => _SendTabState();
+}
+
+class _SendTabState extends State<SendTab> {
+  String? _targetFingerprint;
 
   @override
-  Widget build(BuildContext context) {
-    return ViewModelBuilder(
-      provider: (ref) => sendTabVmProvider,
-      init: (context) async => context.global.dispatchAsync(SendTabInitAction(context)), // ignore: discarded_futures
-      builder: (context, vm) {
-        final sizingInformation = SizingInformation(MediaQuery.sizeOf(context).width);
-        final buttonWidth = sizingInformation.isDesktop ? BigButton.desktopWidth : BigButton.mobileWidth;
-        final ref = context.ref;
-        return ResponsiveListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const SizedBox(height: 20),
-            if (vm.selectedFiles.isEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-                child: Text(
-                  t.sendTab.selection.title,
-                  style: Theme.of(context).textTheme.titleMedium,
+  Widget build(BuildContext context) => ViewModelBuilder(
+    provider: (ref) => sendTabVmProvider,
+    init: (context) async => context.global.dispatchAsync(SendTabInitAction(context)),
+    builder: (context, vm) {
+      final ref = context.ref;
+      final target = vm.nearbyDevices.where((d) => d.fingerprint == _targetFingerprint).firstOrNull;
+      Future<void> addFiles() async => AddFileDialog.open(context: context, options: pickerOptions);
+      return ResponsiveListView(
+        maxWidth: 840,
+        padding: const EdgeInsets.all(24),
+        tabletPadding: const EdgeInsets.all(32),
+        children: [
+          ScreenHeader(title: t.sendTab.title, subtitle: t.neardockUI.sendSubtitle),
+          Row(
+            children: [
+              Expanded(child: Text(t.sendTab.nearbyDevices, style: Theme.of(context).textTheme.titleMedium)),
+              _ScanButton(ips: vm.localIps),
+              IconButton(tooltip: t.sendTab.manualSending, onPressed: () => vm.onTapAddress(context), icon: const Icon(Icons.add_link)),
+              IconButton(tooltip: t.dialogs.favoriteDialog.title, onPressed: () => vm.onTapFavorite(context), icon: const Icon(Icons.star_outline)),
+              _SendModeButton(onSelect: (mode) async => vm.onTapSendMode(context, mode)),
+            ],
+          ),
+          if (vm.nearbyDevices.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.sendTab.help),
+                    const SizedBox(height: 8),
+                    TextButton(onPressed: () => context.push(() => const TroubleshootPage()), child: Text(t.troubleshootPage.title)),
+                  ],
                 ),
               ),
-              ResponsiveWrapView(
-                outerHorizontalPadding: 15,
-                outerVerticalPadding: 10,
-                childPadding: 10,
-                minChildWidth: buttonWidth,
-                children: pickerOptions.map((option) {
-                  return BigButton(
-                    icon: option.icon,
-                    label: option.label,
-                    filled: false,
-                    onTap: () async => ref.global.dispatchAsync(
-                      PickFileAction(
-                        option: option,
-                        context: context,
+            ),
+          for (final device in vm.nearbyDevices)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: vm.sendMode == SendMode.multiple
+                  ? _MultiSendDeviceListTile(
+                      device: device,
+                      isFavorite: vm.favoriteDevices.findDevice(device) != null,
+                      nameOverride: vm.favoriteDevices.findDevice(device)?.alias,
+                      vm: vm,
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _targetFingerprint == device.fingerprint ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                        ),
+                      ),
+                      child: DeviceListTile(
+                        device: device,
+                        isFavorite: vm.favoriteDevices.findDevice(device) != null,
+                        nameOverride: vm.favoriteDevices.findDevice(device)?.alias,
+                        onDetailsTap: () => context.push(() => DeviceDetailsPage(device: device)),
+                        onTap: () => setState(() => _targetFingerprint = device.fingerprint),
                       ),
                     ),
-                  );
-                }).toList(),
+            ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Text(t.sendTab.selection.files(files: vm.selectedFiles.length), style: Theme.of(context).textTheme.titleMedium),
               ),
-            ] else ...[
-              Card(
-                margin: const EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 15, top: 5, bottom: 15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            t.sendTab.selection.title,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const Spacer(),
-                          CustomIconButton(
-                            onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
-                            child: Icon(Icons.close, color: Theme.of(context).colorScheme.secondary),
-                          ),
-                          const SizedBox(width: 5),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Text(t.sendTab.selection.files(files: vm.selectedFiles.length)),
-                      Text(t.sendTab.selection.size(size: vm.selectedFiles.fold(0, (prev, curr) => prev + curr.size).asReadableFileSize)),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        height: defaultThumbnailSize,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: vm.selectedFiles.length,
-                          itemBuilder: (context, index) {
-                            final file = vm.selectedFiles[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 10),
-                              child: SmartFileThumbnail.fromCrossFile(file),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              foregroundColor: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            onPressed: () async {
-                              await context.push(() => const SelectedFilesPage());
-                            },
-                            child: Text(t.general.edit),
-                          ),
-                          const SizedBox(width: 15),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                            onPressed: () async {
-                              if (pickerOptions.length == 1) {
-                                // open directly
-                                await ref.global.dispatchAsync(
-                                  PickFileAction(
-                                    option: pickerOptions.first,
-                                    context: context,
-                                  ),
-                                );
-                                return;
-                              }
-                              await AddFileDialog.open(
-                                context: context,
-                                options: pickerOptions,
-                              );
-                            },
-                            icon: const Icon(Icons.add),
-                            label: Text(t.general.add),
-                          ),
-                          const SizedBox(width: 15),
-                        ],
-                      ),
-                    ],
-                  ),
+              if (vm.selectedFiles.isNotEmpty)
+                TextButton(onPressed: () => context.push(() => const SelectedFilesPage()), child: Text(t.general.edit)),
+              if (vm.selectedFiles.isNotEmpty)
+                IconButton(
+                  tooltip: t.general.delete,
+                  onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(ClearSelectionAction()),
+                  icon: const Icon(Icons.clear_all),
                 ),
-              ),
             ],
-            Row(
-              children: [
-                const SizedBox(width: _horizontalPadding),
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Text(t.sendTab.nearbyDevices, style: Theme.of(context).textTheme.titleMedium),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                _ScanButton(
-                  ips: vm.localIps,
-                ),
-                Tooltip(
-                  message: t.sendTab.manualSending,
-                  child: CustomIconButton(
-                    onPressed: () async => vm.onTapAddress(context),
-                    child: const Icon(Icons.ads_click),
-                  ),
-                ),
-                Tooltip(
-                  message: t.dialogs.favoriteDialog.title,
-                  child: CustomIconButton(
-                    onPressed: () async => await vm.onTapFavorite(context),
-                    child: const Icon(Icons.favorite),
-                  ),
-                ),
-                _SendModeButton(
-                  onSelect: (mode) async => vm.onTapSendMode(context, mode),
-                ),
-              ],
-            ),
-            if (vm.nearbyDevices.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
-                child: Opacity(
-                  opacity: 0.3,
-                  child: DevicePlaceholderListTile(),
-                ),
-              ),
-            ...vm.nearbyDevices.map((device) {
-              final favoriteEntry = vm.favoriteDevices.findDevice(device);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10, left: _horizontalPadding, right: _horizontalPadding),
-                child: Hero(
-                  tag: 'device-${device.ip}',
-                  child: vm.sendMode == SendMode.multiple
-                      ? _MultiSendDeviceListTile(
-                          device: device,
-                          isFavorite: favoriteEntry != null,
-                          nameOverride: favoriteEntry?.alias,
-                          vm: vm,
-                        )
-                      : DeviceListTile(
-                          device: device,
-                          isFavorite: favoriteEntry != null,
-                          nameOverride: favoriteEntry?.alias,
-                          onDetailsTap: () async => await context.push(() => DeviceDetailsPage(device: device)),
-                          onTap: () async => await vm.onTapDevice(context, device),
-                        ),
-                ),
-              );
-            }),
-            const SizedBox(height: 10),
-            Center(
-              child: TextButton(
-                onPressed: () async {
-                  await context.push(() => const TroubleshootPage());
-                },
-                child: Text(t.troubleshootPage.title),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-              child: Consumer(
-                builder: (context, ref) {
-                  final animations = ref.watch(animationProvider);
-                  return OpacitySlideshow(
-                    durationMillis: 6000,
-                    running: animations,
-                    children: [
-                      Text(
-                        t.sendTab.help,
-                        style: const TextStyle(color: Colors.grey),
-                        textAlign: TextAlign.center,
+          ),
+          if (vm.selectedFiles.isNotEmpty)
+            Card(
+              child: Column(
+                children: [
+                  for (var index = 0; index < vm.selectedFiles.length; index++)
+                    ListTile(
+                      leading: SmartFileThumbnail.fromCrossFile(vm.selectedFiles[index]),
+                      title: Text(vm.selectedFiles[index].name, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(vm.selectedFiles[index].size.asReadableFileSize),
+                      trailing: IconButton(
+                        tooltip: t.general.delete,
+                        onPressed: () => ref.redux(selectedSendingFilesProvider).dispatch(RemoveSelectedFileAction(index)),
+                        icon: const Icon(Icons.close),
                       ),
-                      if (checkPlatformCanReceiveShareIntent())
-                        Text(
-                          t.sendTab.shareIntentInfo,
-                          style: const TextStyle(color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
-                    ],
-                  );
-                },
+                    ),
+                ],
               ),
             ),
-            const SizedBox(height: 50),
-          ],
-        );
-      },
-    );
-  }
+          const SizedBox(height: 12),
+          OutlinedButton.icon(onPressed: addFiles, icon: const Icon(Icons.add), label: Text(t.general.add)),
+          const SizedBox(height: 20),
+          if (vm.sendMode == SendMode.single)
+            FilledButton.icon(
+              onPressed: target != null && vm.selectedFiles.isNotEmpty ? () => vm.onTapDevice(context, target) : null,
+              icon: const Icon(Icons.send),
+              label: Text(t.sendTab.title),
+            ),
+          const SizedBox(height: 20),
+          if (checkPlatformCanReceiveShareIntent()) Text(t.sendTab.shareIntentInfo, style: Theme.of(context).textTheme.bodySmall),
+          Center(
+            child: TextButton(onPressed: () => context.push(() => const TroubleshootPage()), child: Text(t.troubleshootPage.title)),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 /// A button that opens a popup menu to select [T].

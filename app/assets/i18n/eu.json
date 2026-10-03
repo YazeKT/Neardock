@@ -1,5 +1,5 @@
 {
-  "appName": "LocalSend",
+  "appName": "Neardock",
   "general": {
     "accept": "Onartu",
     "accepted": "Onartuta",
@@ -109,7 +109,7 @@
       "minimizeToTray": "Itxi: txikitu lehioa",
       "launchAtStartup": "Hasieratze automatikoa",
       "launchMinimized": "Hasieratze automatikoa: hasi txikituta",
-      "showInContextMenu": "Erakutsi LocalSend testuinguru menuan",
+      "showInContextMenu": "Erakutsi Neardock testuinguru menuan",
       "animations": "Animazioak"
     },
     "receive": {
@@ -180,7 +180,7 @@
   },
   "networkInterfacesPage": {
     "title": "Sare interfazeak",
-    "info": "Lehenespenez, LocalSend-ek eskuragarri dauden sare-interfaze guztiak erabiltzen ditu. Nahi ez dituzun sareak hemen baztertu ditzakezu. Zerbitzaria berrabiarazi behar duzu aldaketak aplikatzeko.",
+    "info": "Lehenespenez, Neardock-ek eskuragarri dauden sare-interfaze guztiak erabiltzen ditu. Nahi ez dituzun sareak hemen baztertu ditzakezu. Zerbitzaria berrabiarazi behar duzu aldaketak aplikatzeko.",
     "preview": "Aurrebista",
     "whitelist": "Zerrenda zuria",
     "blacklist": "Zerrenda beltza"
@@ -293,16 +293,16 @@
     "autoAccept": "Onartu eskaerak automatikoki",
     "requirePin": "Eskatu PINa",
     "pinHint": "PINa \"{pin}\" da",
-    "encryptionHint": "LocalSend-ek autosinatutako zertifikatuak erabiltzen ditu. Nabigatzailean onartu behar duzu",
+    "encryptionHint": "Neardock-ek autosinatutako zertifikatuak erabiltzen ditu. Nabigatzailean onartu behar duzu",
     "pendingRequests": "Eskerak: {n}"
   },
   "webReceivePage": {
     "title": "Jaso esteka bidez"
   },
   "aboutPage": {
-    "title": "LocalSend buruz",
+    "title": "Neardock buruz",
     "description": [
-      "LocalSend doako eta kode irekiko aplikazio bat da, gertuko gailuekin fitxategiak eta mezuak modu seguruan partekatzeko aukera ematen dizuna zure sare lokalaren bidez, interneteko konexiorik behar izan gabe.",
+      "Neardock doako eta kode irekiko aplikazio bat da, gertuko gailuekin fitxategiak eta mezuak modu seguruan partekatzeko aukera ematen dizuna zure sare lokalaren bidez, interneteko konexiorik behar izan gabe.",
       "Aplikazio hau Android, iOS, macOS, Windows eta Linux sistemetan dago eskuragarri. Deskarga-aukera guztiak webgune ofizialean aurki ditzakezu."
     ],
     "author": "Egilea",
@@ -398,7 +398,7 @@
     },
     "localNetworkUnauthorized": {
       "title": "@:dialogs.noPermission.title",
-      "description": "Sare lokala eskaneatzeko baimenik gabe, LocalSend-ek ezin ditu inguruko gailuak aurkitu. Mesedez, onartu baimen hau ezarpenetan.",
+      "description": "Sare lokala eskaneatzeko baimenik gabe, Neardock-ek ezin ditu inguruko gailuak aurkitu. Mesedez, onartu baimen hau ezarpenetan.",
       "gotoSettings": "Ezarpenak"
     },
     "messageInput": {
@@ -445,7 +445,7 @@
       "title": "Bidalketa moduak",
       "single": "Bidali fitxategiak hartzaile bakar bati. Bidalketa bukatutakoan aukeraketa garbituko da.",
       "multiple": "Bidali fitxategiak hartzaile anitzeri. Aukeraketa ez da garbituko.",
-      "link": "LocalSend instalatuta ez duten hartzaileak fitxategiak eskuratu ahali zango dituzte lotura nabigatzailean zabalduz."
+      "link": "Neardock instalatuta ez duten hartzaileak fitxategiak eskuratu ahali zango dituzte lotura nabigatzailean zabalduz."
     },
     "zoom": {
       "title": "URL"
@@ -458,7 +458,7 @@
   "tray": {
     "@info": "Apple Guidelines are very strict about the 'close' wording.",
     "open": "@:general.open",
-    "close": "Itxi LocalSend",
+    "close": "Itxi Neardock",
     "closeWindows": "Irten"
   },
   "web": {

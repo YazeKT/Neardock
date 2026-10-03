@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:localsend_app/model/persistence/favorite_device.dart';
 import 'package:localsend_app/model/state/nearby_devices_state.dart';
 import 'package:localsend_app/provider/favorites_provider.dart';
+import 'package:localsend_app/provider/known_devices_provider.dart';
 import 'package:localsend_app/provider/logging/discovery_logs_provider.dart';
 import 'package:localsend_isolates/isolate.dart';
 import 'package:localsend_isolates/model/device.dart';
@@ -19,11 +20,13 @@ final nearbyDevicesProvider = ReduxProvider<NearbyDevicesService, NearbyDevicesS
     isolateController: ref.notifier(parentIsolateProvider),
     favoriteService: ref.notifier(favoritesProvider),
     discoveryLogs: ref.notifier(discoveryLoggerProvider),
+    onDeviceObserved: ref.notifier(knownDevicesProvider).observe,
   );
 });
 
 class NearbyDevicesService extends ReduxNotifier<NearbyDevicesState> {
   final IsolateController _isolateController;
+  final void Function(Device)? onDeviceObserved;
   final FavoritesService _favoriteService;
   final DiscoveryLogger _discoveryLogger;
 
@@ -31,6 +34,7 @@ class NearbyDevicesService extends ReduxNotifier<NearbyDevicesState> {
     required IsolateController isolateController,
     required FavoritesService favoriteService,
     required DiscoveryLogger discoveryLogs,
+    this.onDeviceObserved,
   }) : _discoveryLogger = discoveryLogs,
        _isolateController = isolateController,
        _favoriteService = favoriteService;
@@ -85,6 +89,7 @@ class RegisterDeviceAction extends AsyncReduxAction<NearbyDevicesService, Nearby
   @override
   Future<NearbyDevicesState> reduce() async {
     assert(device.ip?.isNotEmpty ?? false, 'IP must not be empty');
+    notifier.onDeviceObserved?.call(device);
 
     final favoriteDevice = notifier._favoriteService.state.firstWhereOrNull((e) => e.fingerprint == device.fingerprint);
     if (favoriteDevice != null && !favoriteDevice.customAlias) {
