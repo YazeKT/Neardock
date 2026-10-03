@@ -8,7 +8,7 @@ internet connection for local transfers. The initial 1.0.0 release preserves the
 existing transfer engine while introducing a Neardock interface, local text conversations,
 and manual clipboard sharing.
 
-[Website](https://yazekt.github.io/Neardock/) Ã‚Â· [Releases](https://github.com/YazeKT/Neardock/releases) Ã‚Â· [Help](docs/INSTALLATION.md)
+[Website](https://yazekt.github.io/Neardock/) | [Releases](https://github.com/YazeKT/Neardock/releases) | [Help](docs/INSTALLATION.md)
 
 ## Downloads and verification
 

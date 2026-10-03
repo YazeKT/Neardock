@@ -1,6 +1,6 @@
 # Verification status
 
-Evidence collected locally on 2ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ3 October 2026. The owner accepted the current application and authorised GitHub publication on 3 October 2026. Owner acceptance does not imply every detailed case below was tested.
+Evidence collected locally on 2-3 October 2026. The owner accepted the current application and authorised GitHub publication on 3 October 2026. Owner acceptance does not imply every detailed case below was tested.
 
 ## Neardock 1.0.0 checks
 
