@@ -243,7 +243,7 @@ async fn test_web_page() {
     let response = client.get(&base_url).send().await.unwrap();
     assert_eq!(response.status().as_u16(), 200);
     let body = response.text().await.unwrap();
-    assert!(body.contains("LocalSend"));
+    assert!(body.contains("Neardock"));
     assert!(body.contains("prepare-download"));
 
     let response = client
@@ -332,7 +332,7 @@ async fn test_upload_page() {
     let response = client.get(&base_url).send().await.unwrap();
     assert_eq!(response.status().as_u16(), 200);
     let body = response.text().await.unwrap();
-    assert!(body.contains("LocalSend"));
+    assert!(body.contains("Neardock"));
     assert!(body.contains("prepare-upload"));
     // The download page is not served without web send.
     assert!(!body.contains("prepare-download"));

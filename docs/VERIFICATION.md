@@ -1,6 +1,6 @@
 # Verification status
 
-Evidence collected locally on 2–3 October 2026. The owner accepted the current application and authorised GitHub publication on 3 October 2026. Owner acceptance does not imply every detailed case below was tested.
+Evidence collected locally on 2â€“3 October 2026. The owner accepted the current application and authorised GitHub publication on 3 October 2026. Owner acceptance does not imply every detailed case below was tested.
 
 ## Neardock 1.0.0 checks
 
@@ -34,3 +34,5 @@ Remote Wi-Fi SSIDs are not exposed by the transfer protocol. Saved addresses are
 Windows ARM64 and Android ARM32/x64 are configured build targets but have no verified 1.0.0 downloads yet. Corresponding execution and packaging remain pending. No iOS, Fire OS, macOS, Linux or CLI application is supported.
 
 GitHub release asset hashes, source commit and hosted website will be checked during publication. Hosted CI results are separate from the completed local checks and must be reported accurately.
+
+GitHub CI initially found two browser-transfer tests still asserting the previous product name. Their assertions were updated to Neardock; transport implementation remains unchanged. Hosted re-verification follows this test-only correction.
